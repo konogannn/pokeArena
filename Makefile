@@ -6,7 +6,14 @@ UNIT_TESTS	=	unit_tests
 
 CFLAGS	=	-g -Wall -Wextra -Wshadow -I./include
 
-SCF	=	main.c
+SCF	=	main.c		\
+		ai.c		\
+		battle.c	\
+		moves.c		\
+		pokemon.c	\
+		save.c		\
+		team.c		\
+		ui.c
 
 SRC	=	$(addprefix src/, $(SCF))
 
