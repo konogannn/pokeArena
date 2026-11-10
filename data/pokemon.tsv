@@ -1,27 +1,27 @@
 # name    	 hp	 attack	 defense	 speed	 type         	 moves
-Bulbasaur 	 45	     49	      49	    45	 TYPE_GRASS   	 Tackle,Vine Whip,Razor Leaf,-
-Ivysaur   	 60	     62	      63	    60	 TYPE_GRASS   	 Razor Leaf,Solarbeam,Sludge Bomb,Secret Power
-Venusaur  	 80	     82	      83	    80	 TYPE_GRASS   	 Razor Leaf,Solarbeam,Hyper Beam,Earthquake
-Charmander	 39	     52	      43	    65	 TYPE_FIRE    	 Scratch,Ember,Rage,-
-Charmeleon	 58	     64	      58	    80	 TYPE_FIRE    	 Ember,Fire Spin,Flamethrower,Slash
-Charizard 	 78	     84	      78	   100	 TYPE_FIRE    	 Flamethrower,Slash,Wing Attack,Air Slash
-Squirtle  	 44	     48	      65	    43	 TYPE_WATER   	 Water Gun,Bubble,BubbleBeam,-
-Wartortle 	 59	     63	      80	    58	 TYPE_WATER   	 Bubble,BubbleBeam,Bite,Hydro Pump
-Blastoise 	 79	     83	     100	    78	 TYPE_WATER   	 BubbleBeam,Hydro Pump,Earthquake,Hyper Beam
-Caterpie  	 45	     30	      35	    45	 TYPE_BUG     	 Tackle,-,-,-
-Metapod   	 50	     20	      55	    30	 TYPE_BUG     	 Tackle,Bug Bite,-,-
-Butterfree	 60	     45	      50	    70	 TYPE_BUG     	 Gust,Bug Bite,Signal Beam,Air Slash
-Weedle    	 40	     35	      30	    50	 TYPE_BUG     	 Poison Sting,-,-,-
-Kakuna    	 45	     25	      50	    35	 TYPE_BUG     	 Poison Sting,-,-,-
-Beedrill  	 65	     90	      40	    75	 TYPE_BUG     	 Poison Sting,Twineedle,Poison Jab,X-Scissor
-Pidgey    	 40	     45	      40	    56	 TYPE_NORMAL  	 Tackle,Gust,Quick Attack,Wing Attack
-Pidgeotto 	 63	     60	      55	    71	 TYPE_NORMAL  	 Gust,Quick Attack,Wing Attack,Air Slash
-Pidgeot   	 83	     80	      75	   101	 TYPE_NORMAL  	 Quick Attack,Wing Attack,Air Slash,Hyper Beam
-Rattata   	 30	     56	      35	    72	 TYPE_NORMAL  	 Tackle,Quick Attack,Hyper Fang,Bite
-Raticate  	 55	     81	      60	    97	 TYPE_NORMAL  	 Quick Attack,Hyper Fang,Bite,Double-Edge
-Spearow   	 40	     60	      30	    70	 TYPE_NORMAL  	 Peck,Fury Attack,Wing Attack,Drill Peck
-Fearow    	 65	     90	      65	   100	 TYPE_NORMAL  	 Fury Attack,Wing Attack,Drill Peck,Double-Edge
-Ekans     	 35	     60	      44	    55	 TYPE_POISON  	 Wrap,Poison Sting,Bite,Sludge Bomb
-Arbok     	 60	     85	      69	    80	 TYPE_POISON  	 Bite,Poison Jab,Sludge Bomb,Earthquake
-Pikachu   	 35	     55	      40	    90	 TYPE_ELECTRIC	 Thunder Shock,Quick Attack,Thunderbolt,Thunder
-Raichu    	 60	     90	      55	   110	 TYPE_ELECTRIC	 Quick Attack,Thunderbolt,Thunder,Hyper Beam
+Bulbasaur 	 45	     49	      49	    45	 Grass   	 Tackle,Vine Whip,Razor Leaf,-
+Ivysaur   	 60	     62	      63	    60	 Grass   	 Razor Leaf,Solarbeam,Sludge Bomb,Secret Power
+Venusaur  	 80	     82	      83	    80	 Grass   	 Razor Leaf,Solarbeam,Hyper Beam,Earthquake
+Charmander	 39	     52	      43	    65	 Fire    	 Scratch,Ember,Rage,-
+Charmeleon	 58	     64	      58	    80	 Fire    	 Ember,Fire Spin,Flamethrower,Slash
+Charizard 	 78	     84	      78	   100	 Fire    	 Flamethrower,Slash,Wing Attack,Air Slash
+Squirtle  	 44	     48	      65	    43	 Water   	 Water Gun,Bubble,BubbleBeam,-
+Wartortle 	 59	     63	      80	    58	 Water   	 Bubble,BubbleBeam,Bite,Hydro Pump
+Blastoise 	 79	     83	     100	    78	 Water   	 BubbleBeam,Hydro Pump,Earthquake,Hyper Beam
+Caterpie  	 45	     30	      35	    45	 Bug     	 Tackle,-,-,-
+Metapod   	 50	     20	      55	    30	 Bug     	 Tackle,Bug Bite,-,-
+Butterfree	 60	     45	      50	    70	 Bug     	 Gust,Bug Bite,Signal Beam,Air Slash
+Weedle    	 40	     35	      30	    50	 Bug     	 Poison Sting,-,-,-
+Kakuna    	 45	     25	      50	    35	 Bug     	 Poison Sting,-,-,-
+Beedrill  	 65	     90	      40	    75	 Bug     	 Poison Sting,Twineedle,Poison Jab,X-Scissor
+Pidgey    	 40	     45	      40	    56	 Normal  	 Tackle,Gust,Quick Attack,Wing Attack
+Pidgeotto 	 63	     60	      55	    71	 Normal  	 Gust,Quick Attack,Wing Attack,Air Slash
+Pidgeot   	 83	     80	      75	   101	 Normal  	 Quick Attack,Wing Attack,Air Slash,Hyper Beam
+Rattata   	 30	     56	      35	    72	 Normal  	 Tackle,Quick Attack,Hyper Fang,Bite
+Raticate  	 55	     81	      60	    97	 Normal  	 Quick Attack,Hyper Fang,Bite,Double-Edge
+Spearow   	 40	     60	      30	    70	 Normal  	 Peck,Fury Attack,Wing Attack,Drill Peck
+Fearow    	 65	     90	      65	   100	 Normal  	 Fury Attack,Wing Attack,Drill Peck,Double-Edge
+Ekans     	 35	     60	      44	    55	 Poison  	 Wrap,Poison Sting,Bite,Sludge Bomb
+Arbok     	 60	     85	      69	    80	 Poison  	 Bite,Poison Jab,Sludge Bomb,Earthquake
+Pikachu   	 35	     55	      40	    90	 Electric	 Thunder Shock,Quick Attack,Thunderbolt,Thunder
+Raichu    	 60	     90	      55	   110	 Electric	 Quick Attack,Thunderbolt,Thunder,Hyper Beam

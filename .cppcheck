@@ -1,0 +1,12 @@
+
+# Enable all available diagnostic categories
+enable=all
+
+# C standard
+std=c99
+
+# Suppress noisy checks only when justified
+inline-suppr
+
+# Exit with a non-zero status if errors are detected
+error-exitcode=1

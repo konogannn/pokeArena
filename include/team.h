@@ -2,7 +2,8 @@
 
 #include "pokemon.h"
 
-typedef struct {
+typedef struct
+{
     Pokemon pokemons[6];
     int count;
 } Team;

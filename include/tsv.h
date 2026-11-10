@@ -1,7 +1,7 @@
 #pragma once
 
 #define TSV_MAX_FIELDS 16
-#define TSV_MAX_LINE   1024
+#define TSV_MAX_LINE 1024
 
 typedef int (*TsvRowCallback)(int field_count, char **fields, void *userdata);
 

@@ -7,26 +7,32 @@
 #include <stdlib.h>
 #include <string.h>
 
-char *tsv_trim(char *str) {
-    while (*str && isspace((unsigned char)*str)) {
+char *tsv_trim(char *str)
+{
+    while (*str && isspace((unsigned char)*str))
+    {
         str++;
     }
     size_t len = strlen(str);
-    while (len > 0 && isspace((unsigned char)str[len - 1])) {
+    while (len > 0 && isspace((unsigned char)str[len - 1]))
+    {
         str[--len] = '\0';
     }
     return str;
 }
 
-int tsv_parse_int(const char *str, int *out_val) {
-    if (!str || *str == '\0' || !out_val) {
+int tsv_parse_int(const char *str, int *out_val)
+{
+    if (!str || *str == '\0' || !out_val)
+    {
         return -1;
     }
 
     char *end = NULL;
     errno = 0;
     long val = strtol(str, &end, 10);
-    if (errno != 0 || *end != '\0' || val < INT_MIN || val > INT_MAX) {
+    if (errno != 0 || *end != '\0' || val < INT_MIN || val > INT_MAX)
+    {
         return -1;
     }
 
@@ -34,24 +40,30 @@ int tsv_parse_int(const char *str, int *out_val) {
     return 0;
 }
 
-static int is_blank_or_comment(const char *line) {
-    while (*line && isspace((unsigned char)*line)) {
+static int is_blank_or_comment(const char *line)
+{
+    while (*line && isspace((unsigned char)*line))
+    {
         line++;
     }
     return (*line == '\0' || *line == '#');
 }
 
-static int split_fields(char *line, char **fields, int max_fields) {
+static int split_fields(char *line, char **fields, int max_fields)
+{
     int count = 0;
     char *cursor = line;
 
-    while (count < max_fields) {
+    while (count < max_fields)
+    {
         char *tab = strchr(cursor, '\t');
-        if (tab) {
+        if (tab)
+        {
             *tab = '\0';
         }
         fields[count++] = tsv_trim(cursor);
-        if (!tab) {
+        if (!tab)
+        {
             break;
         }
         cursor = tab + 1;
@@ -59,8 +71,10 @@ static int split_fields(char *line, char **fields, int max_fields) {
     return count;
 }
 
-static int parse_line(char *line, TsvRowCallback callback, void *userdata) {
-    if (is_blank_or_comment(line)) {
+static int parse_line(char *line, TsvRowCallback callback, void *userdata)
+{
+    if (is_blank_or_comment(line))
+    {
         return 0;
     }
 
@@ -69,21 +83,30 @@ static int parse_line(char *line, TsvRowCallback callback, void *userdata) {
     return callback(count, fields, userdata) == 0 ? 1 : -1;
 }
 
-int tsv_parse_file(const char *path, TsvRowCallback callback, void *userdata) {
-    if (!path || !callback) {
+int tsv_parse_file(const char *path, TsvRowCallback callback, void *userdata)
+{
+    if (!path || !callback)
+    {
         return -1;
     }
 
     FILE *fp = fopen(path, "r");
-    if (!fp) {
+    if (!fp)
+    {
+        fprintf(stderr, "tsv: cannot open file '%s'\n", path);
         return -1;
     }
 
     char line[TSV_MAX_LINE];
     int rows = 0;
-    while (fgets(line, sizeof(line), fp)) {
+    int line_num = 0;
+    while (fgets(line, sizeof(line), fp))
+    {
+        line_num++;
         int status = parse_line(line, callback, userdata);
-        if (status < 0) {
+        if (status < 0)
+        {
+            fprintf(stderr, "tsv: failed parsing '%s' at line %d\n", path, line_num);
             fclose(fp);
             return -1;
         }

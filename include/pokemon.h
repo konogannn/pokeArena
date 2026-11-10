@@ -2,7 +2,8 @@
 
 #include "moves.h"
 
-typedef struct {
+typedef struct
+{
     char name[32];
 
     int hp;

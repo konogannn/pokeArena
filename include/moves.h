@@ -2,7 +2,8 @@
 
 #include "type.h"
 
-typedef struct {
+typedef struct
+{
     char name[32];
     int power;
     int accuracy;

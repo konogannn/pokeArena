@@ -2,7 +2,8 @@
 
 #include "team.h"
 
-typedef struct {
+typedef struct
+{
     Team player_team;
     Team opponent_team;
 
