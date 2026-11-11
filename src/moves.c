@@ -1,4 +1,5 @@
 #include "moves.h"
+#include "color.h"
 #include "tsv.h"
 
 #include <stdio.h>
@@ -11,6 +12,41 @@ typedef struct
     int count;
     int capacity;
 } MoveBuffer;
+
+static const char *const EFFECT_NAMES[EFFECT_COUNT] = {
+    [EFFECT_NONE]      = "-",
+    [EFFECT_POISON]    = "Poison",
+    [EFFECT_BURN]      = "Burn",
+    [EFFECT_PARALYSIS] = "Paralysis",
+    [EFFECT_CRIT]      = "Crit",
+    [EFFECT_HEAL]      = "Heal",
+};
+
+const char *move_effect_to_string(enum MoveEffect effect)
+{
+    if (effect < 0 || effect >= EFFECT_COUNT)
+    {
+        return NULL;
+    }
+    return EFFECT_NAMES[effect];
+}
+
+static int parse_effect(const char *str, enum MoveEffect *out_effect)
+{
+    if (!str || !out_effect)
+    {
+        return -1;
+    }
+    for (int i = 0; i < EFFECT_COUNT; i++)
+    {
+        if (strcmp(str, EFFECT_NAMES[i]) == 0)
+        {
+            *out_effect = (enum MoveEffect)i;
+            return 0;
+        }
+    }
+    return -1;
+}
 
 /* --- Technical buffer helper --- */
 
@@ -55,7 +91,15 @@ static int is_valid_move(const Move *move)
         fprintf(stderr, "moves: empty move name\n");
         return 0;
     }
-    if (move->power <= 0)
+    if (move->effect == EFFECT_HEAL)
+    {
+        if (move->power < 0)
+        {
+            fprintf(stderr, "moves: '%s' power (%d) must be >= 0\n", move->name, move->power);
+            return 0;
+        }
+    }
+    else if (move->power <= 0)
     {
         fprintf(stderr, "moves: '%s' power (%d) must be > 0\n", move->name, move->power);
         return 0;
@@ -65,10 +109,43 @@ static int is_valid_move(const Move *move)
         fprintf(stderr, "moves: '%s' accuracy (%d) must be in 0..100\n", move->name, move->accuracy);
         return 0;
     }
+    if (move->effect != EFFECT_NONE && (move->effect_chance < 1 || move->effect_chance > 100))
+    {
+        fprintf(stderr, "moves: '%s' effect chance (%d) must be in 1..100\n",
+                move->name, move->effect_chance);
+        return 0;
+    }
     return 1;
 }
 
-static int parse_move(char **fields, Move *out)
+static int parse_move_effect(int field_count, char **fields, Move *out)
+{
+    out->effect = EFFECT_NONE;
+    out->effect_chance = 0;
+
+    if (field_count < 5 || strcmp(fields[4], "-") == 0)
+    {
+        return 0;
+    }
+    if (parse_effect(fields[4], &out->effect) != 0)
+    {
+        fprintf(stderr, "moves: invalid effect '%s' for '%s'\n", fields[4], out->name);
+        return -1;
+    }
+    if (field_count < 6 || strcmp(fields[5], "-") == 0)
+    {
+        out->effect_chance = 100;
+        return 0;
+    }
+    if (tsv_parse_int(fields[5], &out->effect_chance) != 0)
+    {
+        fprintf(stderr, "moves: invalid effect chance '%s' for '%s'\n", fields[5], out->name);
+        return -1;
+    }
+    return 0;
+}
+
+static int parse_move(int field_count, char **fields, Move *out)
 {
     snprintf(out->name, sizeof(out->name), "%s", fields[0]);
     if (tsv_parse_int(fields[1], &out->power) != 0)
@@ -86,7 +163,7 @@ static int parse_move(char **fields, Move *out)
         fprintf(stderr, "moves: invalid type '%s' for '%s'\n", fields[3], out->name);
         return -1;
     }
-    return 0;
+    return parse_move_effect(field_count, fields, out);
 }
 
 static int add_move_row(int field_count, char **fields, void *userdata)
@@ -96,10 +173,10 @@ static int add_move_row(int field_count, char **fields, void *userdata)
 
     if (field_count < 4)
     {
-        fprintf(stderr, "moves: expected 4 fields, got %d\n", field_count);
+        fprintf(stderr, "moves: expected at least 4 fields, got %d\n", field_count);
         return -1;
     }
-    if (parse_move(fields, &move) != 0 || !is_valid_move(&move))
+    if (parse_move(field_count, fields, &move) != 0 || !is_valid_move(&move))
     {
         return -1;
     }
@@ -139,4 +216,31 @@ Move *load_moves(const char *path, int *out_count)
 void free_moves(Move *moves)
 {
     free(moves);
+}
+
+void display_move(const Move *move)
+{
+    if (!move)
+    {
+        return;
+    }
+
+    const char *type_name = type_to_string(move->type);
+    const char *tc = color_for_type((int)move->type);
+    printf("%-14s [%s%-8s%s] Pwr:%3d  Acc:%3d%%",
+           move->name,
+           color_code(tc),
+           type_name ? type_name : "UNKNOWN",
+           color_code(ANSI_RESET),
+           move->power,
+           move->accuracy);
+    if (move->effect != EFFECT_NONE)
+    {
+        printf("  (%s%s %d%%%s)",
+               color_code(ANSI_CYAN),
+               move_effect_to_string(move->effect),
+               move->effect_chance,
+               color_code(ANSI_RESET));
+    }
+    printf("\n");
 }

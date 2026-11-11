@@ -1,10 +1,17 @@
 #include "moves.h"
 #include "pokemon.h"
+#include "team.h"
+#include "ui.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 int main(void)
 {
+    srand((unsigned int)time(NULL));
+
     int move_count = 0;
     Move *moves = load_moves("data/moves.tsv", &move_count);
     if (!moves)
@@ -22,13 +29,9 @@ int main(void)
         return 1;
     }
 
-    printf("Loaded %d moves and %d pokemon:\n", move_count, pokemon_count);
-    for (int i = 0; i < pokemon_count; i++)
-    {
-        printf("  %-12s type=%-13s hp=%3d atk=%2d def=%2d spd=%3d moves=%d\n", pokemons[i].name,
-               type_to_string(pokemons[i].type), pokemons[i].hp, pokemons[i].attack,
-               pokemons[i].defense, pokemons[i].speed, pokemons[i].move_count);
-    }
+    Team team;
+    memset(&team, 0, sizeof(team));
+    run_game_loop(pokemons, pokemon_count, moves, move_count, &team);
 
     free_pokemons(pokemons);
     free_moves(moves);

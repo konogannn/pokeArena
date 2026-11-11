@@ -1,7 +1,6 @@
 #pragma once
 
-enum Type
-{
+enum Type {
     TYPE_NORMAL,
     TYPE_FIRE,
     TYPE_WATER,
@@ -26,3 +25,4 @@ extern const char *const TYPE_NAMES[TYPE_COUNT];
 
 int type_from_string(const char *str, enum Type *out_type);
 const char *type_to_string(enum Type type);
+double type_effectiveness(enum Type attack_type, enum Type defense_type);

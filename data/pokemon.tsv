@@ -1,7 +1,7 @@
 # name    	 hp	 attack	 defense	 speed	 type         	 moves
 Bulbasaur 	 45	     49	      49	    45	 Grass   	 Tackle,Vine Whip,Razor Leaf,-
 Ivysaur   	 60	     62	      63	    60	 Grass   	 Razor Leaf,Solarbeam,Sludge Bomb,Secret Power
-Venusaur  	 80	     82	      83	    80	 Grass   	 Razor Leaf,Solarbeam,Hyper Beam,Earthquake
+Venusaur  	 80	     82	      83	    80	 Grass   	 Razor Leaf,Solarbeam,Synthesis,Earthquake
 Charmander	 39	     52	      43	    65	 Fire    	 Scratch,Ember,Rage,-
 Charmeleon	 58	     64	      58	    80	 Fire    	 Ember,Fire Spin,Flamethrower,Slash
 Charizard 	 78	     84	      78	   100	 Fire    	 Flamethrower,Slash,Wing Attack,Air Slash
@@ -16,7 +16,7 @@ Kakuna    	 45	     25	      50	    35	 Bug     	 Poison Sting,-,-,-
 Beedrill  	 65	     90	      40	    75	 Bug     	 Poison Sting,Twineedle,Poison Jab,X-Scissor
 Pidgey    	 40	     45	      40	    56	 Normal  	 Tackle,Gust,Quick Attack,Wing Attack
 Pidgeotto 	 63	     60	      55	    71	 Normal  	 Gust,Quick Attack,Wing Attack,Air Slash
-Pidgeot   	 83	     80	      75	   101	 Normal  	 Quick Attack,Wing Attack,Air Slash,Hyper Beam
+Pidgeot   	 83	     80	      75	   101	 Normal  	 Quick Attack,Wing Attack,Roost,Hyper Beam
 Rattata   	 30	     56	      35	    72	 Normal  	 Tackle,Quick Attack,Hyper Fang,Bite
 Raticate  	 55	     81	      60	    97	 Normal  	 Quick Attack,Hyper Fang,Bite,Double-Edge
 Spearow   	 40	     60	      30	    70	 Normal  	 Peck,Fury Attack,Wing Attack,Drill Peck
