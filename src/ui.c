@@ -2,6 +2,7 @@
 #include "ai.h"
 #include "battle.h"
 #include "color.h"
+#include "save.h"
 #include "tsv.h"
 
 #include <ctype.h>
@@ -94,6 +95,10 @@ static void cmd_help(void)
     printf("  %sbattle%s (b)           - Start a battle with your current team\n",
            color_code(ANSI_GREEN), color_code(ANSI_RESET));
     printf("  %sheal%s                 - Restore all team Pokemon to full HP\n",
+           color_code(ANSI_CYAN), color_code(ANSI_RESET));
+    printf("  %ssave%s [path]          - Save your team to a TSV file\n",
+           color_code(ANSI_CYAN), color_code(ANSI_RESET));
+    printf("  %sload%s [path]          - Load a team from a TSV file\n",
            color_code(ANSI_CYAN), color_code(ANSI_RESET));
     printf("  %sclear%s                - Clear your team\n",
            color_code(ANSI_CYAN), color_code(ANSI_RESET));
@@ -243,6 +248,29 @@ static void cmd_battle(const Pokemon *pokedex, int pokedex_count, Team *team, co
     *team = battle.player_team;
 }
 
+static void cmd_save(const Team *team, const char *arg)
+{
+    const char *path = (arg && *arg != '\0') ? arg : "data/team.tsv";
+
+    if (save_team(path, team) == 0)
+    {
+        printf("%sTeam saved to '%s' (%d/6).%s\n",
+               color_code(ANSI_GREEN), path, team->count, color_code(ANSI_RESET));
+    }
+}
+
+static void cmd_load(const Pokemon *pokedex, int pokedex_count, Team *team, const char *arg)
+{
+    const char *path = (arg && *arg != '\0') ? arg : "data/team.tsv";
+
+    if (load_team(path, pokedex, pokedex_count, team) == 0)
+    {
+        printf("%sTeam loaded from '%s' (%d/6).%s\n",
+               color_code(ANSI_GREEN), path, team->count, color_code(ANSI_RESET));
+        display_team(*team);
+    }
+}
+
 static int handle_command(const char *cmd, char *arg,
                           const Pokemon *pokedex, int pokedex_count,
                           const Move *moves, int move_count, Team *team)
@@ -295,6 +323,14 @@ static int handle_command(const char *cmd, char *arg,
     {
         heal_team(team);
         printf("%sTeam healed to full HP.%s\n", color_code(ANSI_GREEN), color_code(ANSI_RESET));
+    }
+    else if (strcmp(cmd, "save") == 0)
+    {
+        cmd_save(team, arg);
+    }
+    else if (strcmp(cmd, "load") == 0)
+    {
+        cmd_load(pokedex, pokedex_count, team, arg);
     }
     else if (strcmp(cmd, "clear") == 0)
     {

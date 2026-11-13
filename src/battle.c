@@ -96,6 +96,21 @@ static void apply_move_effect(Pokemon *attacker, Pokemon *defender, Move move)
     }
 }
 
+static void consume_move_pp(Pokemon *attacker, const char *move_name)
+{
+    for (int i = 0; i < attacker->move_count; i++)
+    {
+        if (strcmp(attacker->moves[i].name, move_name) == 0)
+        {
+            if (attacker->moves[i].pp > 0)
+            {
+                attacker->moves[i].pp--;
+            }
+            return;
+        }
+    }
+}
+
 void execute_attack(Pokemon *attacker, Pokemon *defender, Move move)
 {
     if (!attacker || !defender)
@@ -109,6 +124,8 @@ void execute_attack(Pokemon *attacker, Pokemon *defender, Move move)
                color_code(ANSI_YELLOW), attacker->name, color_code(ANSI_RESET));
         return;
     }
+
+    consume_move_pp(attacker, move.name);
 
     char msg[128];
     snprintf(msg, sizeof(msg), "%s uses %s!\n", attacker->name, move.name);
@@ -255,11 +272,28 @@ static int prompt_switch(Battle *battle)
     }
 }
 
+static int has_usable_move(const Pokemon *pokemon)
+{
+    for (int i = 0; i < pokemon->move_count; i++)
+    {
+        if (pokemon->moves[i].pp > 0)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 static int prompt_move(const Pokemon *pokemon)
 {
     if (pokemon->move_count <= 0)
     {
         return -1;
+    }
+    if (!has_usable_move(pokemon))
+    {
+        printf("%s has no PP left! Using Struggle!\n", pokemon->name);
+        return -2;
     }
     printf("Choose a move:\n");
     for (int i = 0; i < pokemon->move_count; i++)
@@ -267,8 +301,20 @@ static int prompt_move(const Pokemon *pokemon)
         printf("  [%d] ", i + 1);
         display_move(&pokemon->moves[i]);
     }
-    int choice = read_int_choice("Move: ", 1, pokemon->move_count);
-    return choice < 0 ? -1 : choice - 1;
+    while (1)
+    {
+        int choice = read_int_choice("Move: ", 1, pokemon->move_count);
+        if (choice < 0)
+        {
+            return -1;
+        }
+        if (pokemon->moves[choice - 1].pp <= 0)
+        {
+            printf("No PP left for %s! Choose another move.\n", pokemon->moves[choice - 1].name);
+            continue;
+        }
+        return choice - 1;
+    }
 }
 
 static int player_goes_first(const Pokemon *player, const Pokemon *opponent)
@@ -386,11 +432,14 @@ void execute_turn(Battle *battle)
     if (action == 1)
     {
         int move_idx = prompt_move(player);
-        if (move_idx < 0)
+        if (move_idx == -1)
         {
             battle->forfeited = 1;
             return;
         }
+        Move chosen = move_idx == -2
+            ? (Move){"Struggle", 50, 100, TYPE_NORMAL, EFFECT_NONE, 0, 1, 1}
+            : player->moves[move_idx];
         int ai_sw = ai_should_switch(&battle->opponent_team, battle->opponent_active,
                                      player, battle->difficulty);
         if (ai_sw >= 0)
@@ -399,12 +448,12 @@ void execute_turn(Battle *battle)
             battle->opponent_active = ai_sw;
             opponent = &battle->opponent_team.pokemons[ai_sw];
             printf("Opponent sends out %s!\n", opponent->name);
-            execute_attack(player, opponent, player->moves[move_idx]);
+            execute_attack(player, opponent, chosen);
         }
         else
         {
             Move ai_move = ai_choose_move(opponent, player, battle->difficulty);
-            resolve_attacks(player, player->moves[move_idx], opponent, ai_move);
+            resolve_attacks(player, chosen, opponent, ai_move);
         }
     }
     else if (action == 2)

@@ -87,8 +87,22 @@ static int evaluate_move(const Pokemon *opponent, const Pokemon *player, Move mo
 
 static Move pick_random_move(const Pokemon *opponent)
 {
-    int idx = opponent->move_count > 1 ? rand() % opponent->move_count : 0;
-    return opponent->moves[idx];
+    int usable[4];
+    int count = 0;
+
+    for (int i = 0; i < opponent->move_count; i++)
+    {
+        if (opponent->moves[i].pp > 0)
+        {
+            usable[count++] = i;
+        }
+    }
+    if (count == 0)
+    {
+        Move struggle = {"Struggle", 50, 100, TYPE_NORMAL, EFFECT_NONE, 0, 1, 1};
+        return struggle;
+    }
+    return opponent->moves[usable[rand() % count]];
 }
 
 Move ai_choose_move(const Pokemon *opponent, const Pokemon *player, enum AiDifficulty difficulty)
@@ -104,10 +118,14 @@ Move ai_choose_move(const Pokemon *opponent, const Pokemon *player, enum AiDiffi
         return pick_random_move(opponent);
     }
 
-    int best_idx = 0;
+    int best_idx = -1;
     int best_score = -2;
     for (int i = 0; i < opponent->move_count; i++)
     {
+        if (opponent->moves[i].pp <= 0)
+        {
+            continue;
+        }
         int s = evaluate_move(opponent, player, opponent->moves[i], difficulty);
         if (s > best_score)
         {
@@ -115,11 +133,17 @@ Move ai_choose_move(const Pokemon *opponent, const Pokemon *player, enum AiDiffi
             best_idx = i;
         }
     }
+    if (best_idx < 0)
+    {
+        Move struggle = {"Struggle", 50, 100, TYPE_NORMAL, EFFECT_NONE, 0, 1, 1};
+        return struggle;
+    }
 
     if (difficulty == AI_MEDIUM && opponent->move_count > 1 && rand() % 4 == 0)
     {
         int alt = rand() % opponent->move_count;
-        if (type_effectiveness(opponent->moves[alt].type, player->type) > 0.0)
+        if (opponent->moves[alt].pp > 0 &&
+            type_effectiveness(opponent->moves[alt].type, player->type) > 0.0)
         {
             return opponent->moves[alt];
         }

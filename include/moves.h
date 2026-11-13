@@ -16,6 +16,8 @@ typedef struct {
     char name[32];
     int power;
     int accuracy;
+    int pp;
+    int max_pp;
     enum Type type;
     enum MoveEffect effect;
     int effect_chance;

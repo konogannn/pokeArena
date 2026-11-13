@@ -64,6 +64,10 @@ void heal_team(Team *team)
     {
         team->pokemons[i].hp = team->pokemons[i].max_hp;
         team->pokemons[i].status = STATUS_NONE;
+        for (int j = 0; j < team->pokemons[i].move_count; j++)
+        {
+            team->pokemons[i].moves[j].pp = team->pokemons[i].moves[j].max_pp;
+        }
     }
 }
 

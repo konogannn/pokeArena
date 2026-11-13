@@ -115,6 +115,11 @@ static int is_valid_move(const Move *move)
                 move->name, move->effect_chance);
         return 0;
     }
+    if (move->max_pp <= 0)
+    {
+        fprintf(stderr, "moves: '%s' max_pp (%d) must be > 0\n", move->name, move->max_pp);
+        return 0;
+    }
     return 1;
 }
 
@@ -123,23 +128,23 @@ static int parse_move_effect(int field_count, char **fields, Move *out)
     out->effect = EFFECT_NONE;
     out->effect_chance = 0;
 
-    if (field_count < 5 || strcmp(fields[4], "-") == 0)
+    if (field_count < 6 || strcmp(fields[5], "-") == 0)
     {
         return 0;
     }
-    if (parse_effect(fields[4], &out->effect) != 0)
+    if (parse_effect(fields[5], &out->effect) != 0)
     {
-        fprintf(stderr, "moves: invalid effect '%s' for '%s'\n", fields[4], out->name);
+        fprintf(stderr, "moves: invalid effect '%s' for '%s'\n", fields[5], out->name);
         return -1;
     }
-    if (field_count < 6 || strcmp(fields[5], "-") == 0)
+    if (field_count < 7 || strcmp(fields[6], "-") == 0)
     {
         out->effect_chance = 100;
         return 0;
     }
-    if (tsv_parse_int(fields[5], &out->effect_chance) != 0)
+    if (tsv_parse_int(fields[6], &out->effect_chance) != 0)
     {
-        fprintf(stderr, "moves: invalid effect chance '%s' for '%s'\n", fields[5], out->name);
+        fprintf(stderr, "moves: invalid effect chance '%s' for '%s'\n", fields[6], out->name);
         return -1;
     }
     return 0;
@@ -158,9 +163,15 @@ static int parse_move(int field_count, char **fields, Move *out)
         fprintf(stderr, "moves: invalid accuracy '%s' for '%s'\n", fields[2], out->name);
         return -1;
     }
-    if (type_from_string(fields[3], &out->type) != 0)
+    if (tsv_parse_int(fields[3], &out->max_pp) != 0)
     {
-        fprintf(stderr, "moves: invalid type '%s' for '%s'\n", fields[3], out->name);
+        fprintf(stderr, "moves: invalid pp '%s' for '%s'\n", fields[3], out->name);
+        return -1;
+    }
+    out->pp = out->max_pp;
+    if (type_from_string(fields[4], &out->type) != 0)
+    {
+        fprintf(stderr, "moves: invalid type '%s' for '%s'\n", fields[4], out->name);
         return -1;
     }
     return parse_move_effect(field_count, fields, out);
@@ -171,9 +182,9 @@ static int add_move_row(int field_count, char **fields, void *userdata)
     MoveBuffer *buf = userdata;
     Move move;
 
-    if (field_count < 4)
+    if (field_count < 5)
     {
-        fprintf(stderr, "moves: expected at least 4 fields, got %d\n", field_count);
+        fprintf(stderr, "moves: expected at least 5 fields, got %d\n", field_count);
         return -1;
     }
     if (parse_move(field_count, fields, &move) != 0 || !is_valid_move(&move))
@@ -227,13 +238,18 @@ void display_move(const Move *move)
 
     const char *type_name = type_to_string(move->type);
     const char *tc = color_for_type((int)move->type);
-    printf("%-14s [%s%-8s%s] Pwr:%3d  Acc:%3d%%",
+    const char *pc = move->pp <= 0 ? ANSI_RED : (move->pp * 3 <= move->max_pp ? ANSI_YELLOW : ANSI_RESET);
+    printf("%-14s [%s%-8s%s] Pwr:%3d  Acc:%3d%%  PP:%s%2d/%-2d%s",
            move->name,
            color_code(tc),
            type_name ? type_name : "UNKNOWN",
            color_code(ANSI_RESET),
            move->power,
-           move->accuracy);
+           move->accuracy,
+           color_code(pc),
+           move->pp,
+           move->max_pp,
+           color_code(ANSI_RESET));
     if (move->effect != EFFECT_NONE)
     {
         printf("  (%s%s %d%%%s)",

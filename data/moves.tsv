@@ -1,43 +1,43 @@
-# name       	 power	 accuracy	 type    	 effect   	 chance
-Tackle       	    35	       95	 Normal  	 -        	 -
-Vine Whip    	    35	      100	 Grass   	 -        	 -
-Razor Leaf   	    55	       95	 Grass   	 Crit     	 50
-Sludge Bomb  	    90	      100	 Poison  	 Poison   	 30
-Solarbeam    	   120	      100	 Grass   	 -        	 -
-Secret Power 	    70	      100	 Normal  	 Paralysis	 30
-Hyper Beam   	   150	       45	 Normal  	 -        	 -
-Earthquake   	   100	      100	 Ground  	 -        	 -
-Scratch      	    40	      100	 Normal  	 -        	 -
-Ember        	    40	      100	 Fire    	 Burn     	 10
-Rage         	    20	      100	 Normal  	 -        	 -
-Fire Spin    	    35	       85	 Fire    	 -        	 -
-Flamethrower 	    95	      100	 Fire    	 Burn     	 10
-Slash        	    70	      100	 Normal  	 Crit     	 50
-Bug Bite     	    60	      100	 Bug     	 -        	 -
-Wing Attack  	    60	      100	 Flying  	 -        	 -
-Air Slash    	    75	       95	 Flying  	 -        	 -
-Water Gun    	    40	      100	 Water   	 -        	 -
-Bubble       	    20	      100	 Water   	 -        	 -
-BubbleBeam   	    65	      100	 Water   	 -        	 -
-Bite         	    60	      100	 Dark    	 -        	 -
-Hydro Pump   	   120	       80	 Water   	 -        	 -
-Gust         	    40	      100	 Flying  	 -        	 -
-Signal Beam  	    75	      100	 Bug     	 -        	 -
-Poison Sting 	    15	      100	 Poison  	 Poison   	 30
-Twineedle    	    25	      100	 Bug     	 Poison   	 20
-Poison Jab   	    80	      100	 Poison  	 Poison   	 30
-X-Scissor    	    80	      100	 Bug     	 -        	 -
-Quick Attack 	    40	      100	 Normal  	 -        	 -
-Hyper Fang   	    80	       90	 Normal  	 -        	 -
-Double-Edge  	   120	      100	 Normal  	 -        	 -
-Peck         	    35	      100	 Flying  	 -        	 -
-Fury Attack  	    15	       85	 Normal  	 -        	 -
-Drill Peck   	    80	      100	 Flying  	 -        	 -
-Wrap         	    15	       85	 Normal  	 -        	 -
-Thunder Shock	    40	      100	 Electric	 Paralysis	 10
-Thunderbolt  	    95	      100	 Electric	 Paralysis	 10
-Thunder      	   120	       70	 Electric	 Paralysis	 30
-Synthesis    	     0	      100	 Grass   	 Heal     	 50
-Roost        	     0	      100	 Flying  	 Heal     	 50
-Recover      	     0	      100	 Normal  	 Heal     	 50
-Rest         	     0	      100	 Psychic 	 Heal     	 100
+# name       	 power	 accuracy	 pp	 type    	 effect   	 chance
+Tackle       	    35	       95	 35	 Normal  	 -        	 -
+Vine Whip    	    35	      100	 25	 Grass   	 -        	 -
+Razor Leaf   	    55	       95	 25	 Grass   	 Crit     	 50
+Sludge Bomb  	    90	      100	 10	 Poison  	 Poison   	 30
+Solarbeam    	   120	      100	 10	 Grass   	 -        	 -
+Secret Power 	    70	      100	 20	 Normal  	 Paralysis	 30
+Hyper Beam   	   150	       45	  5	 Normal  	 -        	 -
+Earthquake   	   100	      100	 10	 Ground  	 -        	 -
+Scratch      	    40	      100	 35	 Normal  	 -        	 -
+Ember        	    40	      100	 25	 Fire    	 Burn     	 10
+Rage         	    20	      100	 20	 Normal  	 -        	 -
+Fire Spin    	    35	       85	 15	 Fire    	 -        	 -
+Flamethrower 	    95	      100	 15	 Fire    	 Burn     	 10
+Slash        	    70	      100	 20	 Normal  	 Crit     	 50
+Bug Bite     	    60	      100	 20	 Bug     	 -        	 -
+Wing Attack  	    60	      100	 35	 Flying  	 -        	 -
+Air Slash    	    75	       95	 15	 Flying  	 -        	 -
+Water Gun    	    40	      100	 25	 Water   	 -        	 -
+Bubble       	    20	      100	 30	 Water   	 -        	 -
+BubbleBeam   	    65	      100	 20	 Water   	 -        	 -
+Bite         	    60	      100	 25	 Dark    	 -        	 -
+Hydro Pump   	   120	       80	  5	 Water   	 -        	 -
+Gust         	    40	      100	 35	 Flying  	 -        	 -
+Signal Beam  	    75	      100	 15	 Bug     	 -        	 -
+Poison Sting 	    15	      100	 35	 Poison  	 Poison   	 30
+Twineedle    	    25	      100	 20	 Bug     	 Poison   	 20
+Poison Jab   	    80	      100	 20	 Poison  	 Poison   	 30
+X-Scissor    	    80	      100	 15	 Bug     	 -        	 -
+Quick Attack 	    40	      100	 30	 Normal  	 -        	 -
+Hyper Fang   	    80	       90	 15	 Normal  	 -        	 -
+Double-Edge  	   120	      100	 15	 Normal  	 -        	 -
+Peck         	    35	      100	 35	 Flying  	 -        	 -
+Fury Attack  	    15	       85	 20	 Normal  	 -        	 -
+Drill Peck   	    80	      100	 20	 Flying  	 -        	 -
+Wrap         	    15	       85	 20	 Normal  	 -        	 -
+Thunder Shock	    40	      100	 30	 Electric	 Paralysis	 10
+Thunderbolt  	    95	      100	 15	 Electric	 Paralysis	 10
+Thunder      	   120	       70	 10	 Electric	 Paralysis	 30
+Synthesis    	     0	      100	  5	 Grass   	 Heal     	 50
+Roost        	     0	      100	 10	 Flying  	 Heal     	 50
+Recover      	     0	      100	 10	 Normal  	 Heal     	 50
+Rest         	     0	      100	 10	 Psychic 	 Heal     	 100
