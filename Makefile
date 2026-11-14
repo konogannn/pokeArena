@@ -25,6 +25,7 @@ SCF         = main.c          \
               ai.c            \
               battle.c        \
               color.c         \
+              gym.c           \
               moves.c         \
               pokemon.c       \
               save.c          \

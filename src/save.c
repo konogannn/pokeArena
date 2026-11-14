@@ -1,4 +1,5 @@
 #include "save.h"
+#include "gym.h"
 #include "tsv.h"
 
 #include <stdio.h>
@@ -7,6 +8,7 @@
 typedef struct
 {
     Team team;
+    int badges_mask;
     const Pokemon *pokedex;
     int pokedex_count;
 } TeamLoadCtx;
@@ -23,6 +25,20 @@ static const Pokemon *find_in_pokedex(const Pokemon *pokedex, int count, const c
     return NULL;
 }
 
+static int parse_badges_row(int field_count, char **fields, TeamLoadCtx *ctx)
+{
+    int mask = 0;
+
+    if (field_count < 2 || tsv_parse_int(fields[1], &mask) != 0 ||
+        mask < 0 || mask >= (1 << GYM_COUNT))
+    {
+        fprintf(stderr, "save: invalid badges mask\n");
+        return -1;
+    }
+    ctx->badges_mask = mask;
+    return 0;
+}
+
 static int add_saved_pokemon(int field_count, char **fields, void *userdata)
 {
     TeamLoadCtx *ctx = userdata;
@@ -31,6 +47,10 @@ static int add_saved_pokemon(int field_count, char **fields, void *userdata)
     {
         fprintf(stderr, "save: missing pokemon name\n");
         return -1;
+    }
+    if (strcmp(fields[0], "BADGES") == 0)
+    {
+        return parse_badges_row(field_count, fields, ctx);
     }
     if (ctx->team.count >= 6)
     {
@@ -71,7 +91,7 @@ static int add_saved_pokemon(int field_count, char **fields, void *userdata)
     return 0;
 }
 
-int save_team(const char *path, const Team *team)
+int save_team(const char *path, const Team *team, int badges_mask)
 {
     if (!path || !team)
     {
@@ -87,6 +107,7 @@ int save_team(const char *path, const Team *team)
     }
 
     fprintf(fp, "# name\thp\tstatus\n");
+    fprintf(fp, "BADGES\t%d\n", badges_mask);
     for (int i = 0; i < team->count; i++)
     {
         const Pokemon *p = &team->pokemons[i];
@@ -101,7 +122,8 @@ int save_team(const char *path, const Team *team)
     return 0;
 }
 
-int load_team(const char *path, const Pokemon *pokedex, int pokedex_count, Team *out_team)
+int load_team(const char *path, const Pokemon *pokedex, int pokedex_count,
+              Team *out_team, int *out_badges_mask)
 {
     if (!path || !pokedex || pokedex_count <= 0 || !out_team)
     {
@@ -120,5 +142,9 @@ int load_team(const char *path, const Pokemon *pokedex, int pokedex_count, Team 
     }
 
     *out_team = ctx.team;
+    if (out_badges_mask)
+    {
+        *out_badges_mask = ctx.badges_mask;
+    }
     return 0;
 }

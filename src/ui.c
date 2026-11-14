@@ -2,6 +2,7 @@
 #include "ai.h"
 #include "battle.h"
 #include "color.h"
+#include "gym.h"
 #include "save.h"
 #include "tsv.h"
 
@@ -94,6 +95,10 @@ static void cmd_help(void)
            color_code(ANSI_CYAN), color_code(ANSI_RESET));
     printf("  %sbattle%s (b)           - Start a battle with your current team\n",
            color_code(ANSI_GREEN), color_code(ANSI_RESET));
+    printf("  %sgyms%s                 - List all 8 Kanto Gym Leaders & badges\n",
+           color_code(ANSI_CYAN), color_code(ANSI_RESET));
+    printf("  %sgym%s <1-8|name>       - Challenge a Kanto Gym Leader\n",
+           color_code(ANSI_YELLOW), color_code(ANSI_RESET));
     printf("  %sheal%s                 - Restore all team Pokemon to full HP\n",
            color_code(ANSI_CYAN), color_code(ANSI_RESET));
     printf("  %ssave%s [path]          - Save your team to a TSV file\n",
@@ -248,24 +253,38 @@ static void cmd_battle(const Pokemon *pokedex, int pokedex_count, Team *team, co
     *team = battle.player_team;
 }
 
-static void cmd_save(const Team *team, const char *arg)
+static void cmd_gym(const Pokemon *pokedex, int pokedex_count, Team *team,
+                    int *badges_mask, const char *arg)
+{
+    int idx = find_gym_index(arg);
+
+    if (idx < 0)
+    {
+        fprintf(stderr, "ui: usage: gym <1-8|leader name>\n");
+        return;
+    }
+    challenge_gym(idx, pokedex, pokedex_count, team, badges_mask);
+}
+
+static void cmd_save(const Team *team, int badges_mask, const char *arg)
 {
     const char *path = (arg && *arg != '\0') ? arg : "data/team.tsv";
 
-    if (save_team(path, team) == 0)
+    if (save_team(path, team, badges_mask) == 0)
     {
-        printf("%sTeam saved to '%s' (%d/6).%s\n",
+        printf("%sSaved to '%s' (%d/6 Pokemon).%s\n",
                color_code(ANSI_GREEN), path, team->count, color_code(ANSI_RESET));
     }
 }
 
-static void cmd_load(const Pokemon *pokedex, int pokedex_count, Team *team, const char *arg)
+static void cmd_load(const Pokemon *pokedex, int pokedex_count,
+                     Team *team, int *badges_mask, const char *arg)
 {
     const char *path = (arg && *arg != '\0') ? arg : "data/team.tsv";
 
-    if (load_team(path, pokedex, pokedex_count, team) == 0)
+    if (load_team(path, pokedex, pokedex_count, team, badges_mask) == 0)
     {
-        printf("%sTeam loaded from '%s' (%d/6).%s\n",
+        printf("%sLoaded from '%s' (%d/6 Pokemon).%s\n",
                color_code(ANSI_GREEN), path, team->count, color_code(ANSI_RESET));
         display_team(*team);
     }
@@ -273,7 +292,7 @@ static void cmd_load(const Pokemon *pokedex, int pokedex_count, Team *team, cons
 
 static int handle_command(const char *cmd, char *arg,
                           const Pokemon *pokedex, int pokedex_count,
-                          const Move *moves, int move_count, Team *team)
+                          const Move *moves, int move_count, Team *team, int *badges_mask)
 {
     if (strcmp(cmd, "quit") == 0 || strcmp(cmd, "exit") == 0 || strcmp(cmd, "q") == 0)
     {
@@ -319,6 +338,14 @@ static int handle_command(const char *cmd, char *arg,
     {
         cmd_battle(pokedex, pokedex_count, team, arg);
     }
+    else if (strcmp(cmd, "gyms") == 0)
+    {
+        display_gyms(*badges_mask);
+    }
+    else if (strcmp(cmd, "gym") == 0)
+    {
+        cmd_gym(pokedex, pokedex_count, team, badges_mask, arg);
+    }
     else if (strcmp(cmd, "heal") == 0)
     {
         heal_team(team);
@@ -326,11 +353,11 @@ static int handle_command(const char *cmd, char *arg,
     }
     else if (strcmp(cmd, "save") == 0)
     {
-        cmd_save(team, arg);
+        cmd_save(team, *badges_mask, arg);
     }
     else if (strcmp(cmd, "load") == 0)
     {
-        cmd_load(pokedex, pokedex_count, team, arg);
+        cmd_load(pokedex, pokedex_count, team, badges_mask, arg);
     }
     else if (strcmp(cmd, "clear") == 0)
     {
@@ -348,6 +375,7 @@ void run_game_loop(const Pokemon *pokedex, int pokedex_count,
                    const Move *moves, int move_count, Team *team)
 {
     char line[UI_INPUT_MAX];
+    int badges_mask = 0;
 
     if (!pokedex || !moves || !team)
     {
@@ -379,7 +407,7 @@ void run_game_loop(const Pokemon *pokedex, int pokedex_count,
         {
             continue;
         }
-        if (handle_command(cmd, arg, pokedex, pokedex_count, moves, move_count, team) != 0)
+        if (handle_command(cmd, arg, pokedex, pokedex_count, moves, move_count, team, &badges_mask) != 0)
         {
             break;
         }
