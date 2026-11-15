@@ -2,7 +2,8 @@
 
 #include "moves.h"
 
-enum Status {
+enum Status
+{
     STATUS_NONE,
     STATUS_POISON,
     STATUS_BURN,
@@ -10,7 +11,8 @@ enum Status {
     STATUS_COUNT
 };
 
-typedef struct {
+typedef struct
+{
     char name[32];
 
     int hp;

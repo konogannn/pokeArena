@@ -31,7 +31,7 @@ int main(void)
 
     Team team;
     memset(&team, 0, sizeof(team));
-    run_game_loop(pokemons, pokemon_count, moves, move_count, &team);
+    run_game_loop(&pokemons, &pokemon_count, &moves, &move_count, &team);
 
     free_pokemons(pokemons);
     free_moves(moves);

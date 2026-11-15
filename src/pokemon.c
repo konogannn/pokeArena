@@ -43,8 +43,7 @@ static int check_stat(const char *pokemon_name, const char *stat_name, const int
 {
     if (val < 0 || val > 255)
     {
-        fprintf(stderr, "pokemon: '%s' %s (%d) must be in 0..255\n",
-                pokemon_name, stat_name, val);
+        fprintf(stderr, "pokemon: '%s' %s (%d) must be in 0..255\n", pokemon_name, stat_name, val);
         return 0;
     }
     return 1;
@@ -81,19 +80,15 @@ static int is_valid_pokemon(const Pokemon *p)
         fprintf(stderr, "pokemon: empty pokemon name\n");
         return 0;
     }
-    return check_stat(p->name, "hp", p->hp) &&
-           check_stat(p->name, "attack", p->attack) &&
-           check_stat(p->name, "defense", p->defense) &&
-           check_stat(p->name, "speed", p->speed);
+    return check_stat(p->name, "hp", p->hp) && check_stat(p->name, "attack", p->attack) &&
+           check_stat(p->name, "defense", p->defense) && check_stat(p->name, "speed", p->speed);
 }
 
 static int parse_pokemon_stats(char **fields, Pokemon *out)
 {
     snprintf(out->name, sizeof(out->name), "%s", fields[0]);
-    if (tsv_parse_int(fields[1], &out->hp) != 0 ||
-        tsv_parse_int(fields[2], &out->attack) != 0 ||
-        tsv_parse_int(fields[3], &out->defense) != 0 ||
-        tsv_parse_int(fields[4], &out->speed) != 0)
+    if (tsv_parse_int(fields[1], &out->hp) != 0 || tsv_parse_int(fields[2], &out->attack) != 0 ||
+        tsv_parse_int(fields[3], &out->defense) != 0 || tsv_parse_int(fields[4], &out->speed) != 0)
     {
         fprintf(stderr, "pokemon: invalid numeric stat for '%s'\n", out->name);
         return -1;
@@ -220,9 +215,9 @@ static const char *hp_color(int hp, int max_hp)
 const char *status_to_string(enum Status status)
 {
     static const char *const names[STATUS_COUNT] = {
-        [STATUS_NONE]      = "OK",
-        [STATUS_POISON]    = "PSN",
-        [STATUS_BURN]      = "BRN",
+        [STATUS_NONE] = "OK",
+        [STATUS_POISON] = "PSN",
+        [STATUS_BURN] = "BRN",
         [STATUS_PARALYSIS] = "PAR",
     };
 
@@ -237,14 +232,14 @@ static const char *status_color(enum Status status)
 {
     switch (status)
     {
-        case STATUS_POISON:
-            return ANSI_MAGENTA;
-        case STATUS_BURN:
-            return ANSI_RED;
-        case STATUS_PARALYSIS:
-            return ANSI_YELLOW;
-        default:
-            return ANSI_RESET;
+    case STATUS_POISON:
+        return ANSI_MAGENTA;
+    case STATUS_BURN:
+        return ANSI_RED;
+    case STATUS_PARALYSIS:
+        return ANSI_YELLOW;
+    default:
+        return ANSI_RESET;
     }
 }
 
@@ -280,23 +275,14 @@ void display_pokemon(const Pokemon *pokemon)
     const char *c = hp_color(pokemon->hp, pokemon->max_hp);
     const char *type_name = type_to_string(pokemon->type);
     const char *tc = color_for_type((int)pokemon->type);
-    printf("%-11s [%s%-8s%s] ",
-           pokemon->name,
-           color_code(tc),
-           type_name ? type_name : "UNKNOWN",
+    printf("%-11s [%s%-8s%s] ", pokemon->name, color_code(tc), type_name ? type_name : "UNKNOWN",
            color_code(ANSI_RESET));
     print_hp_bar(pokemon->hp, pokemon->max_hp);
-    printf(" %s%3d/%-3d HP%s",
-           color_code(c),
-           pokemon->hp,
-           pokemon->max_hp,
-           color_code(ANSI_RESET));
+    printf(" %s%3d/%-3d HP%s", color_code(c), pokemon->hp, pokemon->max_hp, color_code(ANSI_RESET));
     if (pokemon->status != STATUS_NONE)
     {
-        printf(" [%s%s%s]",
-               color_code(status_color(pokemon->status)),
-               status_to_string(pokemon->status),
-               color_code(ANSI_RESET));
+        printf(" [%s%s%s]", color_code(status_color(pokemon->status)),
+               status_to_string(pokemon->status), color_code(ANSI_RESET));
     }
     printf("\n");
 }
@@ -312,14 +298,14 @@ void display_pokemon_stats(const Pokemon *pokemon)
     const char *tc = color_for_type((int)pokemon->type);
     const char *c = hp_color(pokemon->hp, pokemon->max_hp);
     printf("%s=== %s ===%s\n", color_code(ANSI_BOLD), pokemon->name, color_code(ANSI_RESET));
-    printf("  Type    : %s%s%s\n",
-           color_code(tc), type_name ? type_name : "UNKNOWN", color_code(ANSI_RESET));
+    printf("  Type    : %s%s%s\n", color_code(tc), type_name ? type_name : "UNKNOWN",
+           color_code(ANSI_RESET));
     printf("  Status  : %s\n", status_to_string(pokemon->status));
     printf("  HP      : ");
     print_hp_bar(pokemon->hp, pokemon->max_hp);
     printf(" %s%d/%d%s\n", color_code(c), pokemon->hp, pokemon->max_hp, color_code(ANSI_RESET));
-    printf("  Attack  : %d  |  Defense : %d  |  Speed : %d\n",
-           pokemon->attack, pokemon->defense, pokemon->speed);
+    printf("  Attack  : %d  |  Defense : %d  |  Speed : %d\n", pokemon->attack, pokemon->defense,
+           pokemon->speed);
     printf("  Moves   : %d\n", pokemon->move_count);
     for (int i = 0; i < pokemon->move_count; i++)
     {
@@ -338,9 +324,8 @@ void animate_hp_change(const Pokemon *pokemon, int old_hp, int new_hp)
     {
         printf("  %-11s ", pokemon->name);
         print_hp_bar(new_hp, pokemon->max_hp);
-        printf(" %s%3d/%-3d HP%s\n",
-               color_code(hp_color(new_hp, pokemon->max_hp)),
-               new_hp, pokemon->max_hp, color_code(ANSI_RESET));
+        printf(" %s%3d/%-3d HP%s\n", color_code(hp_color(new_hp, pokemon->max_hp)), new_hp,
+               pokemon->max_hp, color_code(ANSI_RESET));
         return;
     }
 
@@ -356,9 +341,8 @@ void animate_hp_change(const Pokemon *pokemon, int old_hp, int new_hp)
         int cur = old_hp + (diff * s) / steps;
         printf("\r  %-11s ", pokemon->name);
         print_hp_bar(cur, pokemon->max_hp);
-        printf(" %s%3d/%-3d HP%s   ",
-               color_code(hp_color(cur, pokemon->max_hp)),
-               cur, pokemon->max_hp, color_code(ANSI_RESET));
+        printf(" %s%3d/%-3d HP%s   ", color_code(hp_color(cur, pokemon->max_hp)), cur,
+               pokemon->max_hp, color_code(ANSI_RESET));
         fflush(stdout);
         sleep_ms(25);
     }

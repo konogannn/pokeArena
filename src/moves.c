@@ -14,12 +14,9 @@ typedef struct
 } MoveBuffer;
 
 static const char *const EFFECT_NAMES[EFFECT_COUNT] = {
-    [EFFECT_NONE]      = "-",
-    [EFFECT_POISON]    = "Poison",
-    [EFFECT_BURN]      = "Burn",
-    [EFFECT_PARALYSIS] = "Paralysis",
-    [EFFECT_CRIT]      = "Crit",
-    [EFFECT_HEAL]      = "Heal",
+    [EFFECT_NONE] = "-",    [EFFECT_POISON] = "Poison",
+    [EFFECT_BURN] = "Burn", [EFFECT_PARALYSIS] = "Paralysis",
+    [EFFECT_CRIT] = "Crit", [EFFECT_HEAL] = "Heal",
 };
 
 const char *move_effect_to_string(enum MoveEffect effect)
@@ -91,7 +88,8 @@ static int is_valid_move(const Move *move)
         fprintf(stderr, "moves: empty move name\n");
         return 0;
     }
-    if (move->effect == EFFECT_HEAL)
+    if (move->effect == EFFECT_HEAL || move->effect == EFFECT_POISON ||
+        move->effect == EFFECT_BURN || move->effect == EFFECT_PARALYSIS)
     {
         if (move->power < 0)
         {
@@ -106,13 +104,14 @@ static int is_valid_move(const Move *move)
     }
     if (move->accuracy < 0 || move->accuracy > 100)
     {
-        fprintf(stderr, "moves: '%s' accuracy (%d) must be in 0..100\n", move->name, move->accuracy);
+        fprintf(stderr, "moves: '%s' accuracy (%d) must be in 0..100\n", move->name,
+                move->accuracy);
         return 0;
     }
     if (move->effect != EFFECT_NONE && (move->effect_chance < 1 || move->effect_chance > 100))
     {
-        fprintf(stderr, "moves: '%s' effect chance (%d) must be in 1..100\n",
-                move->name, move->effect_chance);
+        fprintf(stderr, "moves: '%s' effect chance (%d) must be in 1..100\n", move->name,
+                move->effect_chance);
         return 0;
     }
     if (move->max_pp <= 0)
@@ -238,25 +237,15 @@ void display_move(const Move *move)
 
     const char *type_name = type_to_string(move->type);
     const char *tc = color_for_type((int)move->type);
-    const char *pc = move->pp <= 0 ? ANSI_RED : (move->pp * 3 <= move->max_pp ? ANSI_YELLOW : ANSI_RESET);
-    printf("%-14s [%s%-8s%s] Pwr:%3d  Acc:%3d%%  PP:%s%2d/%-2d%s",
-           move->name,
-           color_code(tc),
-           type_name ? type_name : "UNKNOWN",
-           color_code(ANSI_RESET),
-           move->power,
-           move->accuracy,
-           color_code(pc),
-           move->pp,
-           move->max_pp,
-           color_code(ANSI_RESET));
+    const char *pc =
+        move->pp <= 0 ? ANSI_RED : (move->pp * 3 <= move->max_pp ? ANSI_YELLOW : ANSI_RESET);
+    printf("%-14s [%s%-8s%s] Pwr:%3d  Acc:%3d%%  PP:%s%2d/%-2d%s", move->name, color_code(tc),
+           type_name ? type_name : "UNKNOWN", color_code(ANSI_RESET), move->power, move->accuracy,
+           color_code(pc), move->pp, move->max_pp, color_code(ANSI_RESET));
     if (move->effect != EFFECT_NONE)
     {
-        printf("  (%s%s %d%%%s)",
-               color_code(ANSI_CYAN),
-               move_effect_to_string(move->effect),
-               move->effect_chance,
-               color_code(ANSI_RESET));
+        printf("  (%s%s %d%%%s)", color_code(ANSI_CYAN), move_effect_to_string(move->effect),
+               move->effect_chance, color_code(ANSI_RESET));
     }
     printf("\n");
 }

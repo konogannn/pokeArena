@@ -1,6 +1,7 @@
 #pragma once
 
-enum Type {
+enum Type
+{
     TYPE_NORMAL,
     TYPE_FIRE,
     TYPE_WATER,

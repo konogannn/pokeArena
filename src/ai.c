@@ -8,14 +8,14 @@ const char *ai_difficulty_to_string(enum AiDifficulty difficulty)
 {
     switch (difficulty)
     {
-        case AI_EASY:
-            return "Easy";
-        case AI_MEDIUM:
-            return "Medium";
-        case AI_HARD:
-            return "Hard";
-        default:
-            return "Medium";
+    case AI_EASY:
+        return "Easy";
+    case AI_MEDIUM:
+        return "Medium";
+    case AI_HARD:
+        return "Hard";
+    default:
+        return "Medium";
     }
 }
 
@@ -53,6 +53,17 @@ static int evaluate_move(const Pokemon *opponent, const Pokemon *player, Move mo
     if (eff == 0.0)
     {
         return -1;
+    }
+
+    if (move.power == 0)
+    {
+        if (player->status == STATUS_NONE &&
+            (move.effect == EFFECT_POISON || move.effect == EFFECT_BURN ||
+             move.effect == EFFECT_PARALYSIS))
+        {
+            return difficulty == AI_HARD ? 65 : 30;
+        }
+        return 0;
     }
 
     int dmg = calculate_damage(*opponent, *player, move);
@@ -222,11 +233,11 @@ int ai_choose_switch(const Team *opponent_team, const Pokemon *player, enum AiDi
     return best_idx;
 }
 
-int ai_should_switch(const Team *opponent_team, int active_idx,
-                     const Pokemon *player, enum AiDifficulty difficulty)
+int ai_should_switch(const Team *opponent_team, int active_idx, const Pokemon *player,
+                     enum AiDifficulty difficulty)
 {
-    if (difficulty != AI_HARD || !opponent_team || !player ||
-        active_idx < 0 || active_idx >= opponent_team->count)
+    if (difficulty != AI_HARD || !opponent_team || !player || active_idx < 0 ||
+        active_idx >= opponent_team->count)
     {
         return -1;
     }

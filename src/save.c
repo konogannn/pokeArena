@@ -39,6 +39,31 @@ static int parse_badges_row(int field_count, char **fields, TeamLoadCtx *ctx)
     return 0;
 }
 
+static int parse_saved_pps(char *field, Pokemon *p)
+{
+    char *cursor = field;
+    int idx = 0;
+
+    while (cursor && idx < p->move_count)
+    {
+        char *comma = strchr(cursor, ',');
+        if (comma)
+        {
+            *comma = '\0';
+        }
+        int pp = 0;
+        if (tsv_parse_int(tsv_trim(cursor), &pp) != 0 || pp < 0 || pp > p->moves[idx].max_pp)
+        {
+            fprintf(stderr, "save: invalid pp '%s' for '%s'\n", cursor, p->name);
+            return -1;
+        }
+        p->moves[idx].pp = pp;
+        idx++;
+        cursor = comma ? comma + 1 : NULL;
+    }
+    return 0;
+}
+
 static int add_saved_pokemon(int field_count, char **fields, void *userdata)
 {
     TeamLoadCtx *ctx = userdata;
@@ -86,6 +111,10 @@ static int add_saved_pokemon(int field_count, char **fields, void *userdata)
         }
         p.status = (enum Status)st;
     }
+    if (field_count >= 4 && parse_saved_pps(fields[3], &p) != 0)
+    {
+        return -1;
+    }
 
     add_pokemon(&ctx->team, p);
     return 0;
@@ -106,12 +135,17 @@ int save_team(const char *path, const Team *team, int badges_mask)
         return -1;
     }
 
-    fprintf(fp, "# name\thp\tstatus\n");
+    fprintf(fp, "# name\thp\tstatus\tpp\n");
     fprintf(fp, "BADGES\t%d\n", badges_mask);
     for (int i = 0; i < team->count; i++)
     {
         const Pokemon *p = &team->pokemons[i];
-        fprintf(fp, "%s\t%d\t%d\n", p->name, p->hp, (int)p->status);
+        fprintf(fp, "%s\t%d\t%d\t", p->name, p->hp, (int)p->status);
+        for (int j = 0; j < p->move_count; j++)
+        {
+            fprintf(fp, "%s%d", j > 0 ? "," : "", p->moves[j].pp);
+        }
+        fprintf(fp, "\n");
     }
 
     if (fclose(fp) != 0)

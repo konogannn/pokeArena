@@ -2,7 +2,8 @@
 
 #include "type.h"
 
-enum MoveEffect {
+enum MoveEffect
+{
     EFFECT_NONE,
     EFFECT_POISON,
     EFFECT_BURN,
@@ -12,7 +13,8 @@ enum MoveEffect {
     EFFECT_COUNT
 };
 
-typedef struct {
+typedef struct
+{
     char name[32];
     int power;
     int accuracy;

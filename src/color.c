@@ -42,29 +42,29 @@ const char *color_for_type(int type)
 {
     switch (type)
     {
-        case TYPE_FIRE:
-        case TYPE_FIGHTING:
-            return ANSI_RED;
-        case TYPE_WATER:
-        case TYPE_DRAGON:
-            return ANSI_BLUE;
-        case TYPE_GRASS:
-        case TYPE_BUG:
-            return ANSI_GREEN;
-        case TYPE_ELECTRIC:
-        case TYPE_GROUND:
-        case TYPE_ROCK:
-            return ANSI_YELLOW;
-        case TYPE_POISON:
-        case TYPE_PSYCHIC:
-        case TYPE_GHOST:
-            return ANSI_MAGENTA;
-        case TYPE_ICE:
-        case TYPE_FLYING:
-        case TYPE_STEEL:
-            return ANSI_CYAN;
-        default:
-            return ANSI_RESET;
+    case TYPE_FIRE:
+    case TYPE_FIGHTING:
+        return ANSI_RED;
+    case TYPE_WATER:
+    case TYPE_DRAGON:
+        return ANSI_BLUE;
+    case TYPE_GRASS:
+    case TYPE_BUG:
+        return ANSI_GREEN;
+    case TYPE_ELECTRIC:
+    case TYPE_GROUND:
+    case TYPE_ROCK:
+        return ANSI_YELLOW;
+    case TYPE_POISON:
+    case TYPE_PSYCHIC:
+    case TYPE_GHOST:
+        return ANSI_MAGENTA;
+    case TYPE_ICE:
+    case TYPE_FLYING:
+    case TYPE_STEEL:
+        return ANSI_CYAN;
+    default:
+        return ANSI_RESET;
     }
 }
 

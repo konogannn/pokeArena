@@ -77,40 +77,46 @@ static char *split_word(char *str, char **out_rest)
 static void cmd_help(void)
 {
     printf("%sAvailable commands:%s\n", color_code(ANSI_BOLD), color_code(ANSI_RESET));
-    printf("  %spokedex%s (p)          - List all available Pokemon\n",
-           color_code(ANSI_CYAN), color_code(ANSI_RESET));
-    printf("  %smoves%s (m)            - List all available moves\n",
-           color_code(ANSI_CYAN), color_code(ANSI_RESET));
-    printf("  %sinfo%s <name|index>    - Show detailed stats and moves\n",
-           color_code(ANSI_CYAN), color_code(ANSI_RESET));
-    printf("  %steam%s (t)             - Show your current team\n",
-           color_code(ANSI_CYAN), color_code(ANSI_RESET));
-    printf("  %sadd%s <name|index>     - Add a Pokemon to your team\n",
-           color_code(ANSI_CYAN), color_code(ANSI_RESET));
-    printf("  %sremove%s <1-6>         - Remove a Pokemon from your team\n",
-           color_code(ANSI_CYAN), color_code(ANSI_RESET));
-    printf("  %sswap%s <1-6> <1-6>     - Swap two Pokemon in your team\n",
-           color_code(ANSI_CYAN), color_code(ANSI_RESET));
+    printf("  %spokedex%s (p)          - List all available Pokemon\n", color_code(ANSI_CYAN),
+           color_code(ANSI_RESET));
+    printf("  %smoves%s (m)            - List all available moves\n", color_code(ANSI_CYAN),
+           color_code(ANSI_RESET));
+    printf("  %sinfo%s <name|index>    - Show detailed stats and moves\n", color_code(ANSI_CYAN),
+           color_code(ANSI_RESET));
+    printf("  %steam%s (t)             - Show your current team\n", color_code(ANSI_CYAN),
+           color_code(ANSI_RESET));
+    printf("  %sadd%s <name|index>     - Add a Pokemon to your team\n", color_code(ANSI_CYAN),
+           color_code(ANSI_RESET));
+    printf("  %sremove%s <1-6>         - Remove a Pokemon from your team\n", color_code(ANSI_CYAN),
+           color_code(ANSI_RESET));
+    printf("  %sswap%s <1-6> <1-6>     - Swap two Pokemon in your team\n", color_code(ANSI_CYAN),
+           color_code(ANSI_RESET));
     printf("  %sautofill%s             - Fill remaining team slots randomly\n",
            color_code(ANSI_CYAN), color_code(ANSI_RESET));
     printf("  %sbattle%s (b)           - Start a battle with your current team\n",
            color_code(ANSI_GREEN), color_code(ANSI_RESET));
     printf("  %sgyms%s                 - List all 8 Kanto Gym Leaders & badges\n",
            color_code(ANSI_CYAN), color_code(ANSI_RESET));
-    printf("  %sgym%s <1-8|name>       - Challenge a Kanto Gym Leader\n",
-           color_code(ANSI_YELLOW), color_code(ANSI_RESET));
+    printf("  %sgym%s <1-8|name>       - Challenge a Kanto Gym Leader\n", color_code(ANSI_YELLOW),
+           color_code(ANSI_RESET));
+    printf("  %sleague%s               - Challenge the Indigo League (requires 8 badges)\n",
+           color_code(ANSI_MAGENTA), color_code(ANSI_RESET));
     printf("  %sheal%s                 - Restore all team Pokemon to full HP\n",
            color_code(ANSI_CYAN), color_code(ANSI_RESET));
-    printf("  %ssave%s [path]          - Save your team to a TSV file\n",
+    printf("  %ssave%s [path]          - Save your team to a TSV file\n", color_code(ANSI_CYAN),
+           color_code(ANSI_RESET));
+    printf("  %sload%s [path]          - Load a team from a TSV file\n", color_code(ANSI_CYAN),
+           color_code(ANSI_RESET));
+    printf("  %sloadmoves%s <path>     - Load custom moves from a TSV file\n",
            color_code(ANSI_CYAN), color_code(ANSI_RESET));
-    printf("  %sload%s [path]          - Load a team from a TSV file\n",
+    printf("  %sloadpokemon%s <path>   - Load custom Pokemon from a TSV file\n",
            color_code(ANSI_CYAN), color_code(ANSI_RESET));
-    printf("  %sclear%s                - Clear your team\n",
-           color_code(ANSI_CYAN), color_code(ANSI_RESET));
-    printf("  %shelp%s (h)             - Show this help message\n",
-           color_code(ANSI_CYAN), color_code(ANSI_RESET));
-    printf("  %squit%s (q)             - Exit the game\n",
-           color_code(ANSI_CYAN), color_code(ANSI_RESET));
+    printf("  %sclear%s                - Clear your team\n", color_code(ANSI_CYAN),
+           color_code(ANSI_RESET));
+    printf("  %shelp%s (h)             - Show this help message\n", color_code(ANSI_CYAN),
+           color_code(ANSI_RESET));
+    printf("  %squit%s (q)             - Exit the game\n", color_code(ANSI_CYAN),
+           color_code(ANSI_RESET));
 }
 
 static void cmd_pokedex(const Pokemon *pokedex, int count)
@@ -155,8 +161,8 @@ static void cmd_add(const Pokemon *pokedex, int count, Team *team, const char *a
         return;
     }
     add_pokemon(team, *p);
-    printf("%sAdded %s to your team (%d/6).%s\n",
-           color_code(ANSI_GREEN), p->name, team->count, color_code(ANSI_RESET));
+    printf("%sAdded %s to your team (%d/6).%s\n", color_code(ANSI_GREEN), p->name, team->count,
+           color_code(ANSI_RESET));
 }
 
 static void cmd_remove(Team *team, const char *arg)
@@ -202,8 +208,8 @@ static void cmd_autofill(const Pokemon *pokedex, int pokedex_count, Team *team)
         int pick = rand() % pokedex_count;
         add_pokemon(team, pokedex[pick]);
     }
-    printf("%sTeam autofilled (%d/6).%s\n",
-           color_code(ANSI_GREEN), team->count, color_code(ANSI_RESET));
+    printf("%sTeam autofilled (%d/6).%s\n", color_code(ANSI_GREEN), team->count,
+           color_code(ANSI_RESET));
 }
 
 static enum AiDifficulty parse_difficulty(const char *arg)
@@ -253,8 +259,8 @@ static void cmd_battle(const Pokemon *pokedex, int pokedex_count, Team *team, co
     *team = battle.player_team;
 }
 
-static void cmd_gym(const Pokemon *pokedex, int pokedex_count, Team *team,
-                    int *badges_mask, const char *arg)
+static void cmd_gym(const Pokemon *pokedex, int pokedex_count, Team *team, int *badges_mask,
+                    const char *arg)
 {
     int idx = find_gym_index(arg);
 
@@ -272,27 +278,69 @@ static void cmd_save(const Team *team, int badges_mask, const char *arg)
 
     if (save_team(path, team, badges_mask) == 0)
     {
-        printf("%sSaved to '%s' (%d/6 Pokemon).%s\n",
-               color_code(ANSI_GREEN), path, team->count, color_code(ANSI_RESET));
+        printf("%sSaved to '%s' (%d/6 Pokemon).%s\n", color_code(ANSI_GREEN), path, team->count,
+               color_code(ANSI_RESET));
     }
 }
 
-static void cmd_load(const Pokemon *pokedex, int pokedex_count,
-                     Team *team, int *badges_mask, const char *arg)
+static void cmd_load(const Pokemon *pokedex, int pokedex_count, Team *team, int *badges_mask,
+                     const char *arg)
 {
     const char *path = (arg && *arg != '\0') ? arg : "data/team.tsv";
 
     if (load_team(path, pokedex, pokedex_count, team, badges_mask) == 0)
     {
-        printf("%sLoaded from '%s' (%d/6 Pokemon).%s\n",
-               color_code(ANSI_GREEN), path, team->count, color_code(ANSI_RESET));
+        printf("%sLoaded from '%s' (%d/6 Pokemon).%s\n", color_code(ANSI_GREEN), path, team->count,
+               color_code(ANSI_RESET));
         display_team(*team);
     }
 }
 
-static int handle_command(const char *cmd, char *arg,
-                          const Pokemon *pokedex, int pokedex_count,
-                          const Move *moves, int move_count, Team *team, int *badges_mask)
+static void cmd_load_moves(Move **moves, int *move_count, const char *arg)
+{
+    if (!arg || *arg == '\0')
+    {
+        fprintf(stderr, "ui: usage: loadmoves <path.tsv>\n");
+        return;
+    }
+
+    int new_count = 0;
+    Move *loaded = load_moves(arg, &new_count);
+    if (!loaded)
+    {
+        return;
+    }
+    free_moves(*moves);
+    *moves = loaded;
+    *move_count = new_count;
+    printf("%sLoaded %d custom move(s) from '%s'.%s\n",
+           color_code(ANSI_GREEN), new_count, arg, color_code(ANSI_RESET));
+}
+
+static void cmd_load_pokemon(Pokemon **pokedex, int *pokedex_count,
+                             const Move *moves, int move_count, const char *arg)
+{
+    if (!arg || *arg == '\0')
+    {
+        fprintf(stderr, "ui: usage: loadpokemon <path.tsv>\n");
+        return;
+    }
+
+    int new_count = 0;
+    Pokemon *loaded = load_pokemons(arg, moves, move_count, &new_count);
+    if (!loaded)
+    {
+        return;
+    }
+    free_pokemons(*pokedex);
+    *pokedex = loaded;
+    *pokedex_count = new_count;
+    printf("%sLoaded %d custom Pokemon from '%s'.%s\n",
+           color_code(ANSI_GREEN), new_count, arg, color_code(ANSI_RESET));
+}
+
+static int handle_command(const char *cmd, char *arg, Pokemon **pokedex, int *pokedex_count,
+                          Move **moves, int *move_count, Team *team, int *badges_mask)
 {
     if (strcmp(cmd, "quit") == 0 || strcmp(cmd, "exit") == 0 || strcmp(cmd, "q") == 0)
     {
@@ -304,15 +352,15 @@ static int handle_command(const char *cmd, char *arg,
     }
     else if (strcmp(cmd, "pokedex") == 0 || strcmp(cmd, "p") == 0)
     {
-        cmd_pokedex(pokedex, pokedex_count);
+        cmd_pokedex(*pokedex, *pokedex_count);
     }
     else if (strcmp(cmd, "moves") == 0 || strcmp(cmd, "m") == 0)
     {
-        cmd_moves(moves, move_count);
+        cmd_moves(*moves, *move_count);
     }
     else if (strcmp(cmd, "info") == 0)
     {
-        cmd_info(pokedex, pokedex_count, arg);
+        cmd_info(*pokedex, *pokedex_count, arg);
     }
     else if (strcmp(cmd, "team") == 0 || strcmp(cmd, "t") == 0)
     {
@@ -320,7 +368,7 @@ static int handle_command(const char *cmd, char *arg,
     }
     else if (strcmp(cmd, "add") == 0)
     {
-        cmd_add(pokedex, pokedex_count, team, arg);
+        cmd_add(*pokedex, *pokedex_count, team, arg);
     }
     else if (strcmp(cmd, "remove") == 0)
     {
@@ -332,11 +380,11 @@ static int handle_command(const char *cmd, char *arg,
     }
     else if (strcmp(cmd, "autofill") == 0)
     {
-        cmd_autofill(pokedex, pokedex_count, team);
+        cmd_autofill(*pokedex, *pokedex_count, team);
     }
     else if (strcmp(cmd, "battle") == 0 || strcmp(cmd, "b") == 0)
     {
-        cmd_battle(pokedex, pokedex_count, team, arg);
+        cmd_battle(*pokedex, *pokedex_count, team, arg);
     }
     else if (strcmp(cmd, "gyms") == 0)
     {
@@ -344,7 +392,11 @@ static int handle_command(const char *cmd, char *arg,
     }
     else if (strcmp(cmd, "gym") == 0)
     {
-        cmd_gym(pokedex, pokedex_count, team, badges_mask, arg);
+        cmd_gym(*pokedex, *pokedex_count, team, badges_mask, arg);
+    }
+    else if (strcmp(cmd, "league") == 0)
+    {
+        challenge_league(*pokedex, *pokedex_count, team, *badges_mask);
     }
     else if (strcmp(cmd, "heal") == 0)
     {
@@ -357,7 +409,15 @@ static int handle_command(const char *cmd, char *arg,
     }
     else if (strcmp(cmd, "load") == 0)
     {
-        cmd_load(pokedex, pokedex_count, team, badges_mask, arg);
+        cmd_load(*pokedex, *pokedex_count, team, badges_mask, arg);
+    }
+    else if (strcmp(cmd, "loadmoves") == 0)
+    {
+        cmd_load_moves(moves, move_count, arg);
+    }
+    else if (strcmp(cmd, "loadpokemon") == 0 || strcmp(cmd, "loadpokedex") == 0)
+    {
+        cmd_load_pokemon(pokedex, pokedex_count, *moves, *move_count, arg);
     }
     else if (strcmp(cmd, "clear") == 0)
     {
@@ -371,30 +431,30 @@ static int handle_command(const char *cmd, char *arg,
     return 0;
 }
 
-void run_game_loop(const Pokemon *pokedex, int pokedex_count,
-                   const Move *moves, int move_count, Team *team)
+void run_game_loop(Pokemon **pokedex, int *pokedex_count, Move **moves, int *move_count,
+                   Team *team)
 {
     char line[UI_INPUT_MAX];
     int badges_mask = 0;
 
-    if (!pokedex || !moves || !team)
+    if (!pokedex || !*pokedex || !pokedex_count || !moves || !*moves || !move_count || !team)
     {
         return;
     }
 
-    printf("%s+--------------------------------------+%s\n",
-           color_code(ANSI_CYAN), color_code(ANSI_RESET));
-    printf("%s|         Welcome to PokeArena!        |%s\n",
-           color_code(ANSI_BOLD), color_code(ANSI_RESET));
-    printf("%s+--------------------------------------+%s\n",
-           color_code(ANSI_CYAN), color_code(ANSI_RESET));
+    printf("%s+--------------------------------------+%s\n", color_code(ANSI_CYAN),
+           color_code(ANSI_RESET));
+    printf("%s|         Welcome to PokeArena!        |%s\n", color_code(ANSI_BOLD),
+           color_code(ANSI_RESET));
+    printf("%s+--------------------------------------+%s\n", color_code(ANSI_CYAN),
+           color_code(ANSI_RESET));
     printf("Loaded %d Pokemon and %d moves. Type '%shelp%s' to begin.\n",
-           pokedex_count, move_count, color_code(ANSI_CYAN), color_code(ANSI_RESET));
+           *pokedex_count, *move_count, color_code(ANSI_CYAN), color_code(ANSI_RESET));
 
     while (1)
     {
-        printf("%sPokeArena [%d/6]> %s",
-               color_code(ANSI_BOLD), team->count, color_code(ANSI_RESET));
+        printf("%sPokeArena [%d/6]> %s", color_code(ANSI_BOLD), team->count,
+               color_code(ANSI_RESET));
         if (!fgets(line, sizeof(line), stdin))
         {
             printf("\n");
@@ -407,7 +467,8 @@ void run_game_loop(const Pokemon *pokedex, int pokedex_count,
         {
             continue;
         }
-        if (handle_command(cmd, arg, pokedex, pokedex_count, moves, move_count, team, &badges_mask) != 0)
+        if (handle_command(cmd, arg, pokedex, pokedex_count, moves, move_count, team,
+                           &badges_mask) != 0)
         {
             break;
         }

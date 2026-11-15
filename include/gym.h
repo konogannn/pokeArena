@@ -4,7 +4,8 @@
 #include "pokemon.h"
 #include "team.h"
 
-#define GYM_COUNT 8
+#define GYM_COUNT    8
+#define LEAGUE_COUNT 5
 
 typedef struct
 {
@@ -20,4 +21,6 @@ const GymLeader *get_gym_leader(int index);
 void display_gyms(int badges_mask);
 int challenge_gym(int index, const Pokemon *pokedex, int pokedex_count,
                   Team *player_team, int *badges_mask);
+int challenge_league(const Pokemon *pokedex, int pokedex_count,
+                     Team *player_team, int badges_mask);
 int find_gym_index(const char *arg);
