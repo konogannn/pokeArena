@@ -10,11 +10,21 @@
 static const GymLeader KANTO_GYMS[GYM_COUNT] = {
     {"Brock", "Boulder Badge", "Rock", AI_EASY, {"Geodude", "Onix", NULL, NULL}, 2},
     {"Misty", "Cascade Badge", "Water", AI_EASY, {"Staryu", "Starmie", NULL, NULL}, 2},
-    {"Lt. Surge", "Thunder Badge", "Electric", AI_MEDIUM, {"Voltorb", "Pikachu", "Raichu", NULL}, 3},
+    {"Lt. Surge",
+     "Thunder Badge",
+     "Electric",
+     AI_MEDIUM,
+     {"Voltorb", "Pikachu", "Raichu", NULL},
+     3},
     {"Erika", "Rainbow Badge", "Grass", AI_MEDIUM, {"Victreebel", "Tangela", "Vileplume", NULL}, 3},
     {"Koga", "Soul Badge", "Poison", AI_MEDIUM, {"Koffing", "Muk", "Weezing", NULL}, 3},
     {"Sabrina", "Marsh Badge", "Psychic", AI_HARD, {"Kadabra", "Mr. Mime", "Alakazam", NULL}, 3},
-    {"Blaine", "Volcano Badge", "Fire", AI_HARD, {"Growlithe", "Ponyta", "Rapidash", "Arcanine"}, 4},
+    {"Blaine",
+     "Volcano Badge",
+     "Fire",
+     AI_HARD,
+     {"Growlithe", "Ponyta", "Rapidash", "Arcanine"},
+     4},
     {"Giovanni", "Earth Badge", "Ground", AI_HARD, {"Rhyhorn", "Dugtrio", "Nidoking", "Rhydon"}, 4},
 };
 
@@ -153,7 +163,8 @@ int challenge_gym(int index, const Pokemon *pokedex, int pokedex_count, Team *pl
         if (count_badges(*badges_mask) == GYM_COUNT)
         {
             print_slow(ANSI_YELLOW,
-                       "Congratulations! You collected all 8 Kanto badges! You can now enter the 'league'!\n",
+                       "Congratulations! You collected all 8 Kanto badges! You can now enter the "
+                       "'league'!\n",
                        20);
         }
         return 1;
@@ -161,15 +172,39 @@ int challenge_gym(int index, const Pokemon *pokedex, int pokedex_count, Team *pl
     return 0;
 }
 
-int challenge_league(const Pokemon *pokedex, int pokedex_count,
-                     Team *player_team, int badges_mask)
+int challenge_league(const Pokemon *pokedex, int pokedex_count, Team *player_team, int badges_mask)
 {
     static const GymLeader league[LEAGUE_COUNT] = {
-        {"Elite Four Lorelei", "Indigo #1", "Ice",      AI_HARD, {"Dewgong", "Cloyster", "Slowbro", "Lapras"},     4},
-        {"Elite Four Bruno",   "Indigo #2", "Fighting", AI_HARD, {"Onix", "Hitmonchan", "Hitmonlee", "Machamp"},  4},
-        {"Elite Four Agatha",  "Indigo #3", "Ghost",    AI_HARD, {"Gengar", "Golbat", "Haunter", "Arbok"},        4},
-        {"Elite Four Lance",   "Indigo #4", "Dragon",   AI_HARD, {"Gyarados", "Dragonair", "Aerodactyl", "Dragonite"}, 4},
-        {"Champion Blue",      "Champion",  "Mixed",    AI_HARD, {"Pidgeot", "Alakazam", "Rhydon", "Charizard"}, 4},
+        {"Elite Four Lorelei",
+         "Indigo #1",
+         "Ice",
+         AI_HARD,
+         {"Dewgong", "Cloyster", "Slowbro", "Lapras"},
+         4},
+        {"Elite Four Bruno",
+         "Indigo #2",
+         "Fighting",
+         AI_HARD,
+         {"Onix", "Hitmonchan", "Hitmonlee", "Machamp"},
+         4},
+        {"Elite Four Agatha",
+         "Indigo #3",
+         "Ghost",
+         AI_HARD,
+         {"Gengar", "Golbat", "Haunter", "Arbok"},
+         4},
+        {"Elite Four Lance",
+         "Indigo #4",
+         "Dragon",
+         AI_HARD,
+         {"Gyarados", "Dragonair", "Aerodactyl", "Dragonite"},
+         4},
+        {"Champion Blue",
+         "Champion",
+         "Mixed",
+         AI_HARD,
+         {"Pidgeot", "Alakazam", "Rhydon", "Charizard"},
+         4},
     };
 
     if (!pokedex || !player_team)
@@ -206,8 +241,8 @@ int challenge_league(const Pokemon *pokedex, int pokedex_count,
             }
         }
 
-        printf("\n%s=== Match %d/%d: %s ===%s\n",
-               color_code(ANSI_BOLD), m + 1, LEAGUE_COUNT, op->leader, color_code(ANSI_RESET));
+        printf("\n%s=== Match %d/%d: %s ===%s\n", color_code(ANSI_BOLD), m + 1, LEAGUE_COUNT,
+               op->leader, color_code(ANSI_RESET));
         start_battle(&battle);
         *player_team = battle.player_team;
 

@@ -36,8 +36,8 @@ int calculate_damage(Pokemon attacker, Pokemon defender, Move move)
 
     double stab = (move.type == attacker.type) ? 1.5 : 1.0;
     int def = defender.defense > 0 ? defender.defense : 1;
-    double raw = ((double)move.power * ((double)attacker.attack / (double)def) * 0.5 + 2.0) *
-                 mult * stab;
+    double raw =
+        ((double)move.power * ((double)attacker.attack / (double)def) * 0.5 + 2.0) * mult * stab;
     int damage = (int)raw;
 
     return damage < 1 ? 1 : damage;

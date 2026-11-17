@@ -29,8 +29,8 @@ static int parse_badges_row(int field_count, char **fields, TeamLoadCtx *ctx)
 {
     int mask = 0;
 
-    if (field_count < 2 || tsv_parse_int(fields[1], &mask) != 0 ||
-        mask < 0 || mask >= (1 << GYM_COUNT))
+    if (field_count < 2 || tsv_parse_int(fields[1], &mask) != 0 || mask < 0 ||
+        mask >= (1 << GYM_COUNT))
     {
         fprintf(stderr, "save: invalid badges mask\n");
         return -1;
@@ -156,8 +156,8 @@ int save_team(const char *path, const Team *team, int badges_mask)
     return 0;
 }
 
-int load_team(const char *path, const Pokemon *pokedex, int pokedex_count,
-              Team *out_team, int *out_badges_mask)
+int load_team(const char *path, const Pokemon *pokedex, int pokedex_count, Team *out_team,
+              int *out_badges_mask)
 {
     if (!path || !pokedex || pokedex_count <= 0 || !out_team)
     {

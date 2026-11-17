@@ -313,12 +313,12 @@ static void cmd_load_moves(Move **moves, int *move_count, const char *arg)
     free_moves(*moves);
     *moves = loaded;
     *move_count = new_count;
-    printf("%sLoaded %d custom move(s) from '%s'.%s\n",
-           color_code(ANSI_GREEN), new_count, arg, color_code(ANSI_RESET));
+    printf("%sLoaded %d custom move(s) from '%s'.%s\n", color_code(ANSI_GREEN), new_count, arg,
+           color_code(ANSI_RESET));
 }
 
-static void cmd_load_pokemon(Pokemon **pokedex, int *pokedex_count,
-                             const Move *moves, int move_count, const char *arg)
+static void cmd_load_pokemon(Pokemon **pokedex, int *pokedex_count, const Move *moves,
+                             int move_count, const char *arg)
 {
     if (!arg || *arg == '\0')
     {
@@ -335,8 +335,8 @@ static void cmd_load_pokemon(Pokemon **pokedex, int *pokedex_count,
     free_pokemons(*pokedex);
     *pokedex = loaded;
     *pokedex_count = new_count;
-    printf("%sLoaded %d custom Pokemon from '%s'.%s\n",
-           color_code(ANSI_GREEN), new_count, arg, color_code(ANSI_RESET));
+    printf("%sLoaded %d custom Pokemon from '%s'.%s\n", color_code(ANSI_GREEN), new_count, arg,
+           color_code(ANSI_RESET));
 }
 
 static int handle_command(const char *cmd, char *arg, Pokemon **pokedex, int *pokedex_count,
@@ -431,8 +431,7 @@ static int handle_command(const char *cmd, char *arg, Pokemon **pokedex, int *po
     return 0;
 }
 
-void run_game_loop(Pokemon **pokedex, int *pokedex_count, Move **moves, int *move_count,
-                   Team *team)
+void run_game_loop(Pokemon **pokedex, int *pokedex_count, Move **moves, int *move_count, Team *team)
 {
     char line[UI_INPUT_MAX];
     int badges_mask = 0;
@@ -448,8 +447,8 @@ void run_game_loop(Pokemon **pokedex, int *pokedex_count, Move **moves, int *mov
            color_code(ANSI_RESET));
     printf("%s+--------------------------------------+%s\n", color_code(ANSI_CYAN),
            color_code(ANSI_RESET));
-    printf("Loaded %d Pokemon and %d moves. Type '%shelp%s' to begin.\n",
-           *pokedex_count, *move_count, color_code(ANSI_CYAN), color_code(ANSI_RESET));
+    printf("Loaded %d Pokemon and %d moves. Type '%shelp%s' to begin.\n", *pokedex_count,
+           *move_count, color_code(ANSI_CYAN), color_code(ANSI_RESET));
 
     while (1)
     {
