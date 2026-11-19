@@ -19,7 +19,7 @@ static const char *const EFFECT_NAMES[EFFECT_COUNT] = {
     [EFFECT_CRIT] = "Crit", [EFFECT_HEAL] = "Heal",
 };
 
-const char *move_effect_to_string(enum MoveEffect effect)
+static const char *move_effect_to_string(enum MoveEffect effect)
 {
     if (effect < 0 || effect >= EFFECT_COUNT)
     {

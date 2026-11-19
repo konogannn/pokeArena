@@ -67,7 +67,7 @@ static int count_badges(int badges_mask)
     return count;
 }
 
-const GymLeader *get_gym_leader(int index)
+static const GymLeader *get_gym_leader(int index)
 {
     if (index < 0 || index >= GYM_COUNT)
     {

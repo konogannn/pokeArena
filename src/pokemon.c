@@ -212,7 +212,7 @@ static const char *hp_color(int hp, int max_hp)
     return ANSI_GREEN;
 }
 
-const char *status_to_string(enum Status status)
+static const char *status_to_string(enum Status status)
 {
     static const char *const names[STATUS_COUNT] = {
         [STATUS_NONE] = "OK",

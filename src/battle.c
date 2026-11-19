@@ -113,7 +113,7 @@ static void consume_move_pp(Pokemon *attacker, const char *move_name)
     }
 }
 
-void execute_attack(Pokemon *attacker, Pokemon *defender, Move move)
+static void execute_attack(Pokemon *attacker, Pokemon *defender, Move move)
 {
     if (!attacker || !defender)
     {
@@ -264,7 +264,7 @@ static int prompt_switch(Battle *battle)
     while (1)
     {
         int slot = read_int_choice("Switch to (1-6): ", 1, battle->player_team.count);
-        if (slot < 0)
+        if (slot <= 0)
         {
             return -1;
         }
@@ -317,7 +317,7 @@ static int prompt_move(const Pokemon *pokemon)
     while (1)
     {
         int choice = read_int_choice("Move: ", 1, pokemon->move_count);
-        if (choice < 0)
+        if (choice <= 0)
         {
             return -1;
         }
@@ -366,8 +366,8 @@ static void resolve_attacks(Pokemon *player, Move player_move, Pokemon *opponent
 
 static void handle_fainted(Battle *battle)
 {
-    Pokemon *player = &battle->player_team.pokemons[battle->player_active];
-    Pokemon *opponent = &battle->opponent_team.pokemons[battle->opponent_active];
+    const Pokemon *player = &battle->player_team.pokemons[battle->player_active];
+    const Pokemon *opponent = &battle->opponent_team.pokemons[battle->opponent_active];
 
     if (!is_pokemon_alive(*player) && !is_team_defeated(battle->player_team))
     {
@@ -416,7 +416,7 @@ static void apply_end_turn_status(Pokemon *pokemon)
     }
 }
 
-void execute_turn(Battle *battle)
+static void execute_turn(Battle *battle)
 {
     if (!battle)
     {

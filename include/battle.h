@@ -17,8 +17,6 @@ typedef struct
 } Battle;
 
 void start_battle(Battle *battle);
-void execute_turn(Battle *battle);
-void execute_attack(Pokemon *attacker, Pokemon *defender, Move move);
 int calculate_damage(Pokemon attacker, Pokemon defender, Move move);
 int is_pokemon_alive(Pokemon pokemon);
 int is_team_defeated(Team team);

@@ -34,4 +34,3 @@ Move *load_moves(const char *path, int *out_count);
 void free_moves(Move *moves);
 
 void display_move(const Move *move);
-const char *move_effect_to_string(enum MoveEffect effect);

@@ -5,17 +5,17 @@ FORMAT      = clang-format
 TARGET      = pokeArena
 UNIT_TESTS  = unit_tests
 
-CFLAGS      = -std=c99 \
-              -Wall \
-              -Wextra \
-              -Wpedantic \
-              -Wshadow \
-              -Wconversion \
-              -Wstrict-prototypes \
+CFLAGS      = -std=c99             \
+              -Wall                \
+              -Wextra              \
+              -Wpedantic           \
+              -Wshadow             \
+              -Wconversion         \
+              -Wstrict-prototypes  \
               -Wmissing-prototypes \
-              -Wformat=2 \
-              -Wundef
-              #-Werror
+              -Wformat=2           \
+              -Wundef              \
+              -Werror
 
 CPPFLAGS    = -I./include
 LDFLAGS     =
@@ -63,19 +63,20 @@ format-check:
 
 # Static analysis
 cppcheck:
-	@cppcheck --enable=all \
-	          --std=c99 \
-	          --language=c \
-	          --error-exitcode=1 \
+	@cppcheck --enable=all                    \
+	          --std=c99                       \
+	          --language=c                    \
+	          --error-exitcode=1              \
 	          --suppress=missingIncludeSystem \
+                 --check-level=exhaustive        \
 	          $(SRC) -I include
 
 # Runtime sanitizers
 sanitize:
-	@$(CC) $(CPPFLAGS) -std=c99 -g -O1 \
-	       -Wall -Wextra -Wpedantic \
-	       -fsanitize=address,undefined \
-	       -fno-omit-frame-pointer \
+	@$(CC) $(CPPFLAGS) -std=c99 -g -O1        \
+	       -Wall -Wextra -Wpedantic           \
+	       -fsanitize=address,undefined       \
+	       -fno-omit-frame-pointer            \
 	       $(SRC) -o $(TARGET)_san $(LDLIBS)
 
 # Run all static checks

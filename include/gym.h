@@ -17,7 +17,6 @@ typedef struct
     int team_size;
 } GymLeader;
 
-const GymLeader *get_gym_leader(int index);
 void display_gyms(int badges_mask);
 int challenge_gym(int index, const Pokemon *pokedex, int pokedex_count, Team *player_team,
                   int *badges_mask);

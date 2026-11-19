@@ -461,7 +461,7 @@ void run_game_loop(Pokemon **pokedex, int *pokedex_count, Move **moves, int *mov
         }
 
         char *arg = NULL;
-        char *cmd = split_word(line, &arg);
+        const char *cmd = split_word(line, &arg);
         if (*cmd == '\0')
         {
             continue;

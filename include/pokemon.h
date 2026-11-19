@@ -40,4 +40,3 @@ void free_pokemons(Pokemon *pokemons);
 void display_pokemon(const Pokemon *pokemon);
 void display_pokemon_stats(const Pokemon *pokemon);
 void animate_hp_change(const Pokemon *pokemon, int old_hp, int new_hp);
-const char *status_to_string(enum Status status);
