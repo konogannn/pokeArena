@@ -2,30 +2,16 @@
 #include "ai.h"
 #include "battle.h"
 #include "color.h"
+#include "display.h"
 #include "gym.h"
 #include "save.h"
-#include "tsv.h"
+#include "utils.h"
 
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define UI_INPUT_MAX 128
-
-static int equals_ignore_case(const char *a, const char *b)
-{
-    while (*a && *b)
-    {
-        if (tolower((unsigned char)*a) != tolower((unsigned char)*b))
-        {
-            return 0;
-        }
-        a++;
-        b++;
-    }
-    return *a == '\0' && *b == '\0';
-}
 
 static const Pokemon *find_pokedex_pokemon(const Pokemon *pokedex, int count, const char *arg)
 {
@@ -35,7 +21,7 @@ static const Pokemon *find_pokedex_pokemon(const Pokemon *pokedex, int count, co
     {
         return NULL;
     }
-    if (tsv_parse_int(arg, &index) == 0)
+    if (str_parse_int(arg, &index) == 0)
     {
         if (index >= 0 && index < count)
         {
@@ -45,7 +31,7 @@ static const Pokemon *find_pokedex_pokemon(const Pokemon *pokedex, int count, co
     }
     for (int i = 0; i < count; i++)
     {
-        if (equals_ignore_case(pokedex[i].name, arg))
+        if (str_equals_icase(pokedex[i].name, arg))
         {
             return &pokedex[i];
         }
@@ -55,17 +41,17 @@ static const Pokemon *find_pokedex_pokemon(const Pokemon *pokedex, int count, co
 
 static char *split_word(char *str, char **out_rest)
 {
-    char *word = tsv_trim(str);
+    char *word = str_trim(str);
     char *cursor = word;
 
-    while (*cursor && !isspace((unsigned char)*cursor))
+    while (*cursor && *cursor != ' ' && *cursor != '\t' && *cursor != '\n' && *cursor != '\r')
     {
         cursor++;
     }
     if (*cursor)
     {
         *cursor = '\0';
-        *out_rest = tsv_trim(cursor + 1);
+        *out_rest = str_trim(cursor + 1);
     }
     else
     {
@@ -169,7 +155,7 @@ static void cmd_remove(Team *team, const char *arg)
 {
     int index = 0;
 
-    if (!arg || tsv_parse_int(arg, &index) != 0)
+    if (!arg || str_parse_int(arg, &index) != 0)
     {
         fprintf(stderr, "ui: usage: remove <1-6>\n");
         return;
@@ -184,7 +170,7 @@ static void cmd_swap(Team *team, char *arg)
     int i = 0;
     int j = 0;
 
-    if (!first || !second || tsv_parse_int(first, &i) != 0 || tsv_parse_int(second, &j) != 0)
+    if (!first || !second || str_parse_int(first, &i) != 0 || str_parse_int(second, &j) != 0)
     {
         fprintf(stderr, "ui: usage: swap <1-6> <1-6>\n");
         return;
@@ -216,15 +202,15 @@ static enum AiDifficulty parse_difficulty(const char *arg)
 {
     if (arg)
     {
-        if (equals_ignore_case(arg, "easy") || strcmp(arg, "1") == 0)
+        if (str_equals_icase(arg, "easy") || strcmp(arg, "1") == 0)
         {
             return AI_EASY;
         }
-        if (equals_ignore_case(arg, "medium") || strcmp(arg, "2") == 0)
+        if (str_equals_icase(arg, "medium") || strcmp(arg, "2") == 0)
         {
             return AI_MEDIUM;
         }
-        if (equals_ignore_case(arg, "hard") || strcmp(arg, "3") == 0)
+        if (str_equals_icase(arg, "hard") || strcmp(arg, "3") == 0)
         {
             return AI_HARD;
         }
@@ -233,7 +219,7 @@ static enum AiDifficulty parse_difficulty(const char *arg)
     char line[UI_INPUT_MAX];
     int choice = 2;
     printf("Select AI difficulty: [1] Easy  [2] Medium  [3] Hard (default 2): ");
-    if (fgets(line, sizeof(line), stdin) && tsv_parse_int(tsv_trim(line), &choice) == 0 &&
+    if (fgets(line, sizeof(line), stdin) && str_parse_int(str_trim(line), &choice) == 0 &&
         choice >= 1 && choice <= 3)
     {
         return (enum AiDifficulty)choice;
@@ -251,7 +237,7 @@ static void cmd_battle(const Pokemon *pokedex, int pokedex_count, Team *team, co
 
     Battle battle;
     memset(&battle, 0, sizeof(battle));
-    battle.difficulty = parse_difficulty(arg);
+    battle.difficulty = (int)parse_difficulty(arg);
     battle.player_team = *team;
     battle.opponent_team = ai_generate_team(pokedex, pokedex_count, team->count);
 

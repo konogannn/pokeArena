@@ -1,6 +1,6 @@
 #include "moves.h"
-#include "color.h"
 #include "tsv.h"
+#include "utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,7 +19,7 @@ static const char *const EFFECT_NAMES[EFFECT_COUNT] = {
     [EFFECT_CRIT] = "Crit", [EFFECT_HEAL] = "Heal",
 };
 
-static const char *move_effect_to_string(enum MoveEffect effect)
+const char *move_effect_to_string(enum MoveEffect effect)
 {
     if (effect < 0 || effect >= EFFECT_COUNT)
     {
@@ -45,8 +45,6 @@ static int parse_effect(const char *str, enum MoveEffect *out_effect)
     return -1;
 }
 
-/* --- Technical buffer helper --- */
-
 static int append_move(MoveBuffer *buf, const Move *move)
 {
     Move *tmp = NULL;
@@ -66,8 +64,6 @@ static int append_move(MoveBuffer *buf, const Move *move)
     buf->items[buf->count++] = *move;
     return 0;
 }
-
-/* --- Business logic --- */
 
 static int has_move_name(const MoveBuffer *buf, const char *name)
 {
@@ -141,7 +137,7 @@ static int parse_move_effect(int field_count, char **fields, Move *out)
         out->effect_chance = 100;
         return 0;
     }
-    if (tsv_parse_int(fields[6], &out->effect_chance) != 0)
+    if (str_parse_int(fields[6], &out->effect_chance) != 0)
     {
         fprintf(stderr, "moves: invalid effect chance '%s' for '%s'\n", fields[6], out->name);
         return -1;
@@ -152,17 +148,17 @@ static int parse_move_effect(int field_count, char **fields, Move *out)
 static int parse_move(int field_count, char **fields, Move *out)
 {
     snprintf(out->name, sizeof(out->name), "%s", fields[0]);
-    if (tsv_parse_int(fields[1], &out->power) != 0)
+    if (str_parse_int(fields[1], &out->power) != 0)
     {
         fprintf(stderr, "moves: invalid power '%s' for '%s'\n", fields[1], out->name);
         return -1;
     }
-    if (tsv_parse_int(fields[2], &out->accuracy) != 0)
+    if (str_parse_int(fields[2], &out->accuracy) != 0)
     {
         fprintf(stderr, "moves: invalid accuracy '%s' for '%s'\n", fields[2], out->name);
         return -1;
     }
-    if (tsv_parse_int(fields[3], &out->max_pp) != 0)
+    if (str_parse_int(fields[3], &out->max_pp) != 0)
     {
         fprintf(stderr, "moves: invalid pp '%s' for '%s'\n", fields[3], out->name);
         return -1;
@@ -226,26 +222,4 @@ Move *load_moves(const char *path, int *out_count)
 void free_moves(Move *moves)
 {
     free(moves);
-}
-
-void display_move(const Move *move)
-{
-    if (!move)
-    {
-        return;
-    }
-
-    const char *type_name = type_to_string(move->type);
-    const char *tc = color_for_type((int)move->type);
-    const char *pc =
-        move->pp <= 0 ? ANSI_RED : (move->pp * 3 <= move->max_pp ? ANSI_YELLOW : ANSI_RESET);
-    printf("%-14s [%s%-8s%s] Pwr:%3d  Acc:%3d%%  PP:%s%2d/%-2d%s", move->name, color_code(tc),
-           type_name ? type_name : "UNKNOWN", color_code(ANSI_RESET), move->power, move->accuracy,
-           color_code(pc), move->pp, move->max_pp, color_code(ANSI_RESET));
-    if (move->effect != EFFECT_NONE)
-    {
-        printf("  (%s%s %d%%%s)", color_code(ANSI_CYAN), move_effect_to_string(move->effect),
-               move->effect_chance, color_code(ANSI_RESET));
-    }
-    printf("\n");
 }

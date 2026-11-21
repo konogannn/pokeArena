@@ -1,13 +1,11 @@
 #include "battle.h"
 #include "ai.h"
 #include "color.h"
-#include "tsv.h"
+#include "display.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define BATTLE_INPUT_MAX 64
 
 int is_pokemon_alive(Pokemon pokemon)
 {
@@ -198,26 +196,6 @@ static void execute_attack(Pokemon *attacker, Pokemon *defender, Move move)
     apply_move_effect(attacker, defender, move);
 }
 
-static int read_int_choice(const char *prompt, int min, int max)
-{
-    char line[BATTLE_INPUT_MAX];
-
-    while (1)
-    {
-        printf("%s", prompt);
-        if (!fgets(line, sizeof(line), stdin))
-        {
-            return -1;
-        }
-        int val = 0;
-        if (tsv_parse_int(tsv_trim(line), &val) == 0 && val >= min && val <= max)
-        {
-            return val;
-        }
-        printf("Invalid choice. Enter a number between %d and %d.\n", min, max);
-    }
-}
-
 static int find_next_alive(const Team *team)
 {
     for (int i = 0; i < team->count; i++)
@@ -230,104 +208,15 @@ static int find_next_alive(const Team *team)
     return -1;
 }
 
-static int count_alive_switches(const Battle *battle)
+static int switch_player_pokemon(Battle *battle)
 {
-    int count = 0;
-    for (int i = 0; i < battle->player_team.count; i++)
+    int idx = ui_prompt_switch(&battle->player_team, battle->player_active);
+    if (idx < 0)
     {
-        if (i != battle->player_active && is_pokemon_alive(battle->player_team.pokemons[i]))
-        {
-            count++;
-        }
-    }
-    return count;
-}
-
-static int prompt_switch(Battle *battle)
-{
-    if (count_alive_switches(battle) == 0)
-    {
-        printf("No other healthy Pokemon to switch to!\n");
         return -1;
     }
-
-    printf("Choose a Pokemon to send out:\n");
-    for (int i = 0; i < battle->player_team.count; i++)
-    {
-        if (is_pokemon_alive(battle->player_team.pokemons[i]))
-        {
-            printf("  [%d] ", i + 1);
-            display_pokemon(&battle->player_team.pokemons[i]);
-        }
-    }
-
-    while (1)
-    {
-        int slot = read_int_choice("Switch to (1-6): ", 1, battle->player_team.count);
-        if (slot <= 0)
-        {
-            return -1;
-        }
-        int idx = slot - 1;
-        if (idx == battle->player_active)
-        {
-            printf("%s is already in battle!\n", battle->player_team.pokemons[idx].name);
-            continue;
-        }
-        if (!is_pokemon_alive(battle->player_team.pokemons[idx]))
-        {
-            printf("%s has fainted!\n", battle->player_team.pokemons[idx].name);
-            continue;
-        }
-        battle->player_active = idx;
-        printf("Go, %s!\n", battle->player_team.pokemons[idx].name);
-        return 0;
-    }
-}
-
-static int has_usable_move(const Pokemon *pokemon)
-{
-    for (int i = 0; i < pokemon->move_count; i++)
-    {
-        if (pokemon->moves[i].pp > 0)
-        {
-            return 1;
-        }
-    }
+    battle->player_active = idx;
     return 0;
-}
-
-static int prompt_move(const Pokemon *pokemon)
-{
-    if (pokemon->move_count <= 0)
-    {
-        return -1;
-    }
-    if (!has_usable_move(pokemon))
-    {
-        printf("%s has no PP left! Using Struggle!\n", pokemon->name);
-        return -2;
-    }
-    printf("Choose a move:\n");
-    for (int i = 0; i < pokemon->move_count; i++)
-    {
-        printf("  [%d] ", i + 1);
-        display_move(&pokemon->moves[i]);
-    }
-    while (1)
-    {
-        int choice = read_int_choice("Move: ", 1, pokemon->move_count);
-        if (choice <= 0)
-        {
-            return -1;
-        }
-        if (pokemon->moves[choice - 1].pp <= 0)
-        {
-            printf("No PP left for %s! Choose another move.\n", pokemon->moves[choice - 1].name);
-            continue;
-        }
-        return choice - 1;
-    }
 }
 
 static int player_goes_first(const Pokemon *player, const Pokemon *opponent)
@@ -371,14 +260,15 @@ static void handle_fainted(Battle *battle)
 
     if (!is_pokemon_alive(*player) && !is_team_defeated(battle->player_team))
     {
-        if (prompt_switch(battle) != 0)
+        if (switch_player_pokemon(battle) != 0)
         {
             battle->forfeited = 1;
         }
     }
     if (!is_pokemon_alive(*opponent) && !is_team_defeated(battle->opponent_team))
     {
-        int next = ai_choose_switch(&battle->opponent_team, player, battle->difficulty);
+        int next =
+            ai_choose_switch(&battle->opponent_team, player, (enum AiDifficulty)battle->difficulty);
         if (next >= 0)
         {
             battle->opponent_active = next;
@@ -426,14 +316,7 @@ static void execute_turn(Battle *battle)
     Pokemon *player = &battle->player_team.pokemons[battle->player_active];
     Pokemon *opponent = &battle->opponent_team.pokemons[battle->opponent_active];
 
-    printf("\n--- Turn %d ---\n", battle->turn);
-    printf("You      : ");
-    display_pokemon(player);
-    printf("Opponent : ");
-    display_pokemon(opponent);
-
-    printf("Action: [1] Attack  [2] Switch  [3] Forfeit\n");
-    int action = read_int_choice("Choice: ", 1, 3);
+    int action = ui_prompt_battle_action(battle->turn, player, opponent);
     if (action < 0 || action == 3)
     {
         battle->forfeited = 1;
@@ -442,7 +325,7 @@ static void execute_turn(Battle *battle)
 
     if (action == 1)
     {
-        int move_idx = prompt_move(player);
+        int move_idx = ui_prompt_move(player);
         if (move_idx == -1)
         {
             battle->forfeited = 1;
@@ -452,7 +335,7 @@ static void execute_turn(Battle *battle)
                           ? (Move){"Struggle", 50, 100, TYPE_NORMAL, EFFECT_NONE, 0, 1, 1}
                           : player->moves[move_idx];
         int ai_sw = ai_should_switch(&battle->opponent_team, battle->opponent_active, player,
-                                     battle->difficulty);
+                                     (enum AiDifficulty)battle->difficulty);
         if (ai_sw >= 0)
         {
             printf("Opponent withdrew %s!\n", opponent->name);
@@ -463,16 +346,17 @@ static void execute_turn(Battle *battle)
         }
         else
         {
-            Move ai_move = ai_choose_move(opponent, player, battle->difficulty);
+            Move ai_move = ai_choose_move(opponent, player, (enum AiDifficulty)battle->difficulty);
             resolve_attacks(player, chosen, opponent, ai_move);
         }
     }
     else if (action == 2)
     {
-        if (prompt_switch(battle) == 0)
+        if (switch_player_pokemon(battle) == 0)
         {
             player = &battle->player_team.pokemons[battle->player_active];
-            execute_attack(opponent, player, ai_choose_move(opponent, player, battle->difficulty));
+            execute_attack(opponent, player,
+                           ai_choose_move(opponent, player, (enum AiDifficulty)battle->difficulty));
         }
     }
 
@@ -499,7 +383,8 @@ void start_battle(Battle *battle)
         return;
     }
 
-    printf("\n=== Battle Start! (AI: %s) ===\n", ai_difficulty_to_string(battle->difficulty));
+    printf("\n=== Battle Start! (AI: %s) ===\n",
+           ai_difficulty_to_string((enum AiDifficulty)battle->difficulty));
     printf("You send out %s!\n", battle->player_team.pokemons[battle->player_active].name);
     printf("Opponent sends out %s!\n",
            battle->opponent_team.pokemons[battle->opponent_active].name);

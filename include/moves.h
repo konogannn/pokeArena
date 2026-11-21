@@ -18,11 +18,11 @@ typedef struct
     char name[32];
     int power;
     int accuracy;
-    int pp;
-    int max_pp;
     enum Type type;
     enum MoveEffect effect;
     int effect_chance;
+    int pp;
+    int max_pp;
 } Move;
 
 /* Loads moves from a TSV file into a heap-allocated array.
@@ -33,4 +33,4 @@ Move *load_moves(const char *path, int *out_count);
 
 void free_moves(Move *moves);
 
-void display_move(const Move *move);
+const char *move_effect_to_string(enum MoveEffect effect);

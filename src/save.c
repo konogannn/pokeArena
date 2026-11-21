@@ -1,9 +1,11 @@
 #include "save.h"
-#include "gym.h"
 #include "tsv.h"
+#include "utils.h"
 
 #include <stdio.h>
 #include <string.h>
+
+#define SAVE_MAX_BADGES_MASK 255
 
 typedef struct
 {
@@ -29,8 +31,8 @@ static int parse_badges_row(int field_count, char **fields, TeamLoadCtx *ctx)
 {
     int mask = 0;
 
-    if (field_count < 2 || tsv_parse_int(fields[1], &mask) != 0 || mask < 0 ||
-        mask >= (1 << GYM_COUNT))
+    if (field_count < 2 || str_parse_int(fields[1], &mask) != 0 || mask < 0 ||
+        mask > SAVE_MAX_BADGES_MASK)
     {
         fprintf(stderr, "save: invalid badges mask\n");
         return -1;
@@ -52,7 +54,7 @@ static int parse_saved_pps(char *field, Pokemon *p)
             *comma = '\0';
         }
         int pp = 0;
-        if (tsv_parse_int(tsv_trim(cursor), &pp) != 0 || pp < 0 || pp > p->moves[idx].max_pp)
+        if (str_parse_int(str_trim(cursor), &pp) != 0 || pp < 0 || pp > p->moves[idx].max_pp)
         {
             fprintf(stderr, "save: invalid pp '%s' for '%s'\n", cursor, p->name);
             return -1;
@@ -94,7 +96,7 @@ static int add_saved_pokemon(int field_count, char **fields, void *userdata)
     if (field_count >= 2)
     {
         int hp = 0;
-        if (tsv_parse_int(fields[1], &hp) != 0 || hp < 0 || hp > p.max_hp)
+        if (str_parse_int(fields[1], &hp) != 0 || hp < 0 || hp > p.max_hp)
         {
             fprintf(stderr, "save: invalid hp '%s' for '%s'\n", fields[1], p.name);
             return -1;
@@ -104,7 +106,7 @@ static int add_saved_pokemon(int field_count, char **fields, void *userdata)
     if (field_count >= 3)
     {
         int st = 0;
-        if (tsv_parse_int(fields[2], &st) != 0 || st < 0 || st >= STATUS_COUNT)
+        if (str_parse_int(fields[2], &st) != 0 || st < 0 || st >= STATUS_COUNT)
         {
             fprintf(stderr, "save: invalid status '%s' for '%s'\n", fields[2], p.name);
             return -1;

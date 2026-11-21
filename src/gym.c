@@ -1,9 +1,8 @@
 #include "gym.h"
 #include "battle.h"
 #include "color.h"
-#include "tsv.h"
+#include "utils.h"
 
-#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -27,20 +26,6 @@ static const GymLeader KANTO_GYMS[GYM_COUNT] = {
      4},
     {"Giovanni", "Earth Badge", "Ground", AI_HARD, {"Rhyhorn", "Dugtrio", "Nidoking", "Rhydon"}, 4},
 };
-
-static int equals_icase(const char *a, const char *b)
-{
-    while (*a && *b)
-    {
-        if (tolower((unsigned char)*a) != tolower((unsigned char)*b))
-        {
-            return 0;
-        }
-        a++;
-        b++;
-    }
-    return *a == '\0' && *b == '\0';
-}
 
 static const Pokemon *find_pokedex_by_name(const Pokemon *pokedex, int count, const char *name)
 {
@@ -84,7 +69,7 @@ int find_gym_index(const char *arg)
     {
         return -1;
     }
-    if (tsv_parse_int(arg, &num) == 0)
+    if (str_parse_int(arg, &num) == 0)
     {
         if (num >= 1 && num <= GYM_COUNT)
         {
@@ -94,7 +79,7 @@ int find_gym_index(const char *arg)
     }
     for (int i = 0; i < GYM_COUNT; i++)
     {
-        if (equals_icase(KANTO_GYMS[i].leader, arg))
+        if (str_equals_icase(KANTO_GYMS[i].leader, arg))
         {
             return i;
         }
@@ -132,7 +117,7 @@ int challenge_gym(int index, const Pokemon *pokedex, int pokedex_count, Team *pl
 
     Battle battle;
     memset(&battle, 0, sizeof(battle));
-    battle.difficulty = gym->difficulty;
+    battle.difficulty = (int)gym->difficulty;
     battle.player_team = *player_team;
 
     for (int i = 0; i < gym->team_size; i++)
@@ -229,7 +214,7 @@ int challenge_league(const Pokemon *pokedex, int pokedex_count, Team *player_tea
         const GymLeader *op = &league[m];
         Battle battle;
         memset(&battle, 0, sizeof(battle));
-        battle.difficulty = op->difficulty;
+        battle.difficulty = (int)op->difficulty;
         battle.player_team = *player_team;
 
         for (int i = 0; i < op->team_size; i++)

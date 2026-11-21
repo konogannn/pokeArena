@@ -25,6 +25,7 @@ SCF         = main.c          \
               ai.c            \
               battle.c        \
               color.c         \
+              display.c       \
               gym.c           \
               moves.c         \
               pokemon.c       \
@@ -32,7 +33,8 @@ SCF         = main.c          \
               team.c          \
               tsv.c           \
               type.c          \
-              ui.c
+              ui.c            \
+              utils.c
 
 SRC         = $(addprefix src/, $(SCF))
 OBJ         = $(SRC:.c=.o)
@@ -51,8 +53,11 @@ src/%.o: src/%.c
 	@$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
 
 # Unit tests
-$(UNIT_TESTS): $(filter-out src/main.o, $(OBJ))
-	@$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+$(UNIT_TESTS): $(filter-out src/main.o, $(OBJ)) tests/test_main.c
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
+tests_run: $(UNIT_TESTS)
+	@./$(UNIT_TESTS)
 
 # Formatting
 format:
@@ -93,4 +98,4 @@ re: fclean all
 
 -include $(DEP)
 
-.PHONY: all clean fclean re format format-check cppcheck sanitize lint
+.PHONY: all clean fclean re format format-check cppcheck sanitize lint test

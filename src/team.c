@@ -71,21 +71,6 @@ void heal_team(Team *team)
     }
 }
 
-void display_team(Team team)
-{
-    printf("Team (%d/6):\n", team.count);
-    if (team.count <= 0)
-    {
-        printf("  (empty)\n");
-        return;
-    }
-    for (int i = 0; i < team.count; i++)
-    {
-        printf("  [%d] ", i + 1);
-        display_pokemon(&team.pokemons[i]);
-    }
-}
-
 int is_team_valid(Team team)
 {
     if (team.count < 1 || team.count > 6)

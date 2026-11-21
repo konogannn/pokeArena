@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ai.h"
 #include "team.h"
 
 typedef struct
@@ -13,7 +12,7 @@ typedef struct
 
     int turn;
     int forfeited;
-    enum AiDifficulty difficulty;
+    int difficulty;
 } Battle;
 
 void start_battle(Battle *battle);
