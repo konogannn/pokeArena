@@ -3,6 +3,7 @@
 #include "gym.h"
 #include "moves.h"
 #include "pokemon.h"
+#include "report.h"
 #include "save.h"
 #include "team.h"
 #include "type.h"
@@ -193,6 +194,38 @@ static void test_save_and_load(void)
     free_moves(moves);
 }
 
+static void test_report(void)
+{
+    BattleReport report;
+    report_init(&report);
+
+    Battle b;
+    memset(&b, 0, sizeof(b));
+    b.turn = 3;
+    b.damage_dealt = 120;
+    b.damage_taken = 40;
+    b.kos_inflicted = 2;
+    b.kos_suffered = 0;
+
+    Pokemon alive = {"Charizard", 78, 78, 84, 78, 100, TYPE_FIRE, STATUS_NONE, {{0}}, 0};
+    Pokemon fainted = {"Onix", 0, 35, 45, 160, 70, TYPE_ROCK, STATUS_NONE, {{0}}, 0};
+    add_pokemon(&b.player_team, alive);
+    add_pokemon(&b.opponent_team, fainted);
+
+    report_record_battle(&report, "Gym #1: Brock", &b);
+    assert(report.total_battles == 1);
+    assert(report.wins == 1);
+    assert(report.total_damage_dealt == 120);
+    assert(report.total_kos_inflicted == 2);
+
+    const char *tmp_path = "/tmp/pokearena_unit_test_report.txt";
+    assert(report_write_file(tmp_path, &report) == 0);
+    FILE *fp = fopen(tmp_path, "r");
+    assert(fp != NULL);
+    fclose(fp);
+    remove(tmp_path);
+}
+
 int main(void)
 {
     srand(42);
@@ -204,6 +237,7 @@ int main(void)
     RUN_TEST(test_battle_damage_and_status);
     RUN_TEST(test_ai_modes);
     RUN_TEST(test_save_and_load);
+    RUN_TEST(test_report);
     printf("All %d test suites passed!\n", tests_run);
     return 0;
 }

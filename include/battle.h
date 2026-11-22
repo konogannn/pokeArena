@@ -13,9 +13,16 @@ typedef struct
     int turn;
     int forfeited;
     int difficulty;
+
+    int damage_dealt;
+    int damage_taken;
+    int kos_inflicted;
+    int kos_suffered;
 } Battle;
 
 void start_battle(Battle *battle);
+void execute_turn(Battle *battle);
+void execute_attack(Pokemon *attacker, Pokemon *defender, Move move);
 int calculate_damage(Pokemon attacker, Pokemon defender, Move move);
 int is_pokemon_alive(Pokemon pokemon);
 int is_team_defeated(Team team);

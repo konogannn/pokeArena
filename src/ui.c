@@ -227,7 +227,8 @@ static enum AiDifficulty parse_difficulty(const char *arg)
     return AI_MEDIUM;
 }
 
-static void cmd_battle(const Pokemon *pokedex, int pokedex_count, Team *team, const char *arg)
+static void cmd_battle(const Pokemon *pokedex, int pokedex_count, Team *team,
+                       const char *arg, BattleReport *report)
 {
     if (!is_team_valid(*team) || is_team_defeated(*team))
     {
@@ -243,10 +244,15 @@ static void cmd_battle(const Pokemon *pokedex, int pokedex_count, Team *team, co
 
     start_battle(&battle);
     *team = battle.player_team;
+
+    char label[64];
+    snprintf(label, sizeof(label), "Wild Battle (%s)",
+             ai_difficulty_to_string((enum AiDifficulty)battle.difficulty));
+    report_record_battle(report, label, &battle);
 }
 
 static void cmd_gym(const Pokemon *pokedex, int pokedex_count, Team *team, int *badges_mask,
-                    const char *arg)
+                    const char *arg, BattleReport *report)
 {
     int idx = find_gym_index(arg);
 
@@ -255,7 +261,7 @@ static void cmd_gym(const Pokemon *pokedex, int pokedex_count, Team *team, int *
         fprintf(stderr, "ui: usage: gym <1-8|leader name>\n");
         return;
     }
-    challenge_gym(idx, pokedex, pokedex_count, team, badges_mask);
+    challenge_gym(idx, pokedex, pokedex_count, team, badges_mask, report);
 }
 
 static void cmd_save(const Team *team, int badges_mask, const char *arg)
@@ -299,12 +305,12 @@ static void cmd_load_moves(Move **moves, int *move_count, const char *arg)
     free_moves(*moves);
     *moves = loaded;
     *move_count = new_count;
-    printf("%sLoaded %d custom move(s) from '%s'.%s\n", color_code(ANSI_GREEN), new_count, arg,
-           color_code(ANSI_RESET));
+    printf("%sLoaded %d custom move(s) from '%s'.%s\n",
+           color_code(ANSI_GREEN), new_count, arg, color_code(ANSI_RESET));
 }
 
-static void cmd_load_pokemon(Pokemon **pokedex, int *pokedex_count, const Move *moves,
-                             int move_count, const char *arg)
+static void cmd_load_pokemon(Pokemon **pokedex, int *pokedex_count,
+                             const Move *moves, int move_count, const char *arg)
 {
     if (!arg || *arg == '\0')
     {
@@ -321,12 +327,13 @@ static void cmd_load_pokemon(Pokemon **pokedex, int *pokedex_count, const Move *
     free_pokemons(*pokedex);
     *pokedex = loaded;
     *pokedex_count = new_count;
-    printf("%sLoaded %d custom Pokemon from '%s'.%s\n", color_code(ANSI_GREEN), new_count, arg,
-           color_code(ANSI_RESET));
+    printf("%sLoaded %d custom Pokemon from '%s'.%s\n",
+           color_code(ANSI_GREEN), new_count, arg, color_code(ANSI_RESET));
 }
 
 static int handle_command(const char *cmd, char *arg, Pokemon **pokedex, int *pokedex_count,
-                          Move **moves, int *move_count, Team *team, int *badges_mask)
+                          Move **moves, int *move_count, Team *team,
+                          int *badges_mask, BattleReport *report)
 {
     if (strcmp(cmd, "quit") == 0 || strcmp(cmd, "exit") == 0 || strcmp(cmd, "q") == 0)
     {
@@ -370,7 +377,7 @@ static int handle_command(const char *cmd, char *arg, Pokemon **pokedex, int *po
     }
     else if (strcmp(cmd, "battle") == 0 || strcmp(cmd, "b") == 0)
     {
-        cmd_battle(*pokedex, *pokedex_count, team, arg);
+        cmd_battle(*pokedex, *pokedex_count, team, arg, report);
     }
     else if (strcmp(cmd, "gyms") == 0)
     {
@@ -378,11 +385,11 @@ static int handle_command(const char *cmd, char *arg, Pokemon **pokedex, int *po
     }
     else if (strcmp(cmd, "gym") == 0)
     {
-        cmd_gym(*pokedex, *pokedex_count, team, badges_mask, arg);
+        cmd_gym(*pokedex, *pokedex_count, team, badges_mask, arg, report);
     }
     else if (strcmp(cmd, "league") == 0)
     {
-        challenge_league(*pokedex, *pokedex_count, team, *badges_mask);
+        challenge_league(*pokedex, *pokedex_count, team, *badges_mask, report);
     }
     else if (strcmp(cmd, "heal") == 0)
     {
@@ -417,7 +424,8 @@ static int handle_command(const char *cmd, char *arg, Pokemon **pokedex, int *po
     return 0;
 }
 
-void run_game_loop(Pokemon **pokedex, int *pokedex_count, Move **moves, int *move_count, Team *team)
+void run_game_loop(Pokemon **pokedex, int *pokedex_count, Move **moves, int *move_count,
+                   Team *team, BattleReport *report)
 {
     char line[UI_INPUT_MAX];
     int badges_mask = 0;
@@ -433,8 +441,8 @@ void run_game_loop(Pokemon **pokedex, int *pokedex_count, Move **moves, int *mov
            color_code(ANSI_RESET));
     printf("%s+--------------------------------------+%s\n", color_code(ANSI_CYAN),
            color_code(ANSI_RESET));
-    printf("Loaded %d Pokemon and %d moves. Type '%shelp%s' to begin.\n", *pokedex_count,
-           *move_count, color_code(ANSI_CYAN), color_code(ANSI_RESET));
+    printf("Loaded %d Pokemon and %d moves. Type '%shelp%s' to begin.\n",
+           *pokedex_count, *move_count, color_code(ANSI_CYAN), color_code(ANSI_RESET));
 
     while (1)
     {
@@ -447,13 +455,13 @@ void run_game_loop(Pokemon **pokedex, int *pokedex_count, Move **moves, int *mov
         }
 
         char *arg = NULL;
-        const char *cmd = split_word(line, &arg);
+        char *cmd = split_word(line, &arg);
         if (*cmd == '\0')
         {
             continue;
         }
         if (handle_command(cmd, arg, pokedex, pokedex_count, moves, move_count, team,
-                           &badges_mask) != 0)
+                           &badges_mask, report) != 0)
         {
             break;
         }

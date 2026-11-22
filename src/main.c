@@ -1,5 +1,6 @@
 #include "moves.h"
 #include "pokemon.h"
+#include "report.h"
 #include "team.h"
 #include "ui.h"
 
@@ -31,7 +32,15 @@ int main(void)
 
     Team team;
     memset(&team, 0, sizeof(team));
-    run_game_loop(&pokemons, &pokemon_count, &moves, &move_count, &team);
+    BattleReport report;
+    report_init(&report);
+
+    run_game_loop(&pokemons, &pokemon_count, &moves, &move_count, &team, &report);
+
+    if (report_write_file("battle_report.txt", &report) == 0)
+    {
+        printf("Battle report saved to 'battle_report.txt'.\n");
+    }
 
     free_pokemons(pokemons);
     free_moves(moves);

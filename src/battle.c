@@ -34,8 +34,8 @@ int calculate_damage(Pokemon attacker, Pokemon defender, Move move)
 
     double stab = (move.type == attacker.type) ? 1.5 : 1.0;
     int def = defender.defense > 0 ? defender.defense : 1;
-    double raw =
-        ((double)move.power * ((double)attacker.attack / (double)def) * 0.5 + 2.0) * mult * stab;
+    double raw = ((double)move.power * ((double)attacker.attack / (double)def) * 0.5 + 2.0) *
+                 mult * stab;
     int damage = (int)raw;
 
     return damage < 1 ? 1 : damage;
@@ -111,18 +111,22 @@ static void consume_move_pp(Pokemon *attacker, const char *move_name)
     }
 }
 
-static void execute_attack(Pokemon *attacker, Pokemon *defender, Move move)
+static int execute_attack_tracked(Pokemon *attacker, Pokemon *defender, Move move, int *out_ko)
 {
+    if (out_ko)
+    {
+        *out_ko = 0;
+    }
     if (!attacker || !defender)
     {
-        return;
+        return 0;
     }
 
     if (attacker->status == STATUS_PARALYSIS && rand() % 4 == 0)
     {
-        printf("%s%s is paralyzed and can't move!%s\n", color_code(ANSI_YELLOW), attacker->name,
-               color_code(ANSI_RESET));
-        return;
+        printf("%s%s is paralyzed and can't move!%s\n",
+               color_code(ANSI_YELLOW), attacker->name, color_code(ANSI_RESET));
+        return 0;
     }
 
     consume_move_pp(attacker, move.name);
@@ -133,13 +137,13 @@ static void execute_attack(Pokemon *attacker, Pokemon *defender, Move move)
     if (rand() % 100 >= move.accuracy)
     {
         print_slow(ANSI_YELLOW, "  The attack missed!\n", 15);
-        return;
+        return 0;
     }
 
     if (move.power == 0 && move.effect == EFFECT_HEAL)
     {
         apply_heal(attacker, move.effect_chance);
-        return;
+        return 0;
     }
 
     double mult = type_effectiveness(move.type, defender->type);
@@ -147,7 +151,7 @@ static void execute_attack(Pokemon *attacker, Pokemon *defender, Move move)
     {
         snprintf(msg, sizeof(msg), "  It doesn't affect %s!\n", defender->name);
         print_slow(ANSI_RED, msg, 15);
-        return;
+        return 0;
     }
 
     if (move.power == 0)
@@ -155,10 +159,10 @@ static void execute_attack(Pokemon *attacker, Pokemon *defender, Move move)
         if (defender->status != STATUS_NONE)
         {
             printf("  But it failed! (%s already has a status)\n", defender->name);
-            return;
+            return 0;
         }
         apply_move_effect(attacker, defender, move);
-        return;
+        return 0;
     }
 
     int damage = calculate_damage(*attacker, *defender, move);
@@ -190,10 +194,20 @@ static void execute_attack(Pokemon *attacker, Pokemon *defender, Move move)
     {
         snprintf(msg, sizeof(msg), "  %s fainted!\n", defender->name);
         print_slow(ANSI_RED, msg, 20);
-        return;
+        if (out_ko)
+        {
+            *out_ko = 1;
+        }
+        return damage;
     }
 
     apply_move_effect(attacker, defender, move);
+    return damage;
+}
+
+void execute_attack(Pokemon *attacker, Pokemon *defender, Move move)
+{
+    execute_attack_tracked(attacker, defender, move, NULL);
 }
 
 static int find_next_alive(const Team *team)
@@ -232,31 +246,37 @@ static int player_goes_first(const Pokemon *player, const Pokemon *opponent)
     return rand() % 2 == 0;
 }
 
-static void resolve_attacks(Pokemon *player, Move player_move, Pokemon *opponent,
-                            Move opponent_move)
+static void resolve_attacks(Battle *battle, Pokemon *player, Move player_move,
+                            Pokemon *opponent, Move opponent_move)
 {
+    int ko = 0;
+
     if (player_goes_first(player, opponent))
     {
-        execute_attack(player, opponent, player_move);
+        battle->damage_dealt += execute_attack_tracked(player, opponent, player_move, &ko);
+        battle->kos_inflicted += ko;
         if (is_pokemon_alive(*opponent))
         {
-            execute_attack(opponent, player, opponent_move);
+            battle->damage_taken += execute_attack_tracked(opponent, player, opponent_move, &ko);
+            battle->kos_suffered += ko;
         }
     }
     else
     {
-        execute_attack(opponent, player, opponent_move);
+        battle->damage_taken += execute_attack_tracked(opponent, player, opponent_move, &ko);
+        battle->kos_suffered += ko;
         if (is_pokemon_alive(*player))
         {
-            execute_attack(player, opponent, player_move);
+            battle->damage_dealt += execute_attack_tracked(player, opponent, player_move, &ko);
+            battle->kos_inflicted += ko;
         }
     }
 }
 
 static void handle_fainted(Battle *battle)
 {
-    const Pokemon *player = &battle->player_team.pokemons[battle->player_active];
-    const Pokemon *opponent = &battle->opponent_team.pokemons[battle->opponent_active];
+    Pokemon *player = &battle->player_team.pokemons[battle->player_active];
+    Pokemon *opponent = &battle->opponent_team.pokemons[battle->opponent_active];
 
     if (!is_pokemon_alive(*player) && !is_team_defeated(battle->player_team))
     {
@@ -267,8 +287,8 @@ static void handle_fainted(Battle *battle)
     }
     if (!is_pokemon_alive(*opponent) && !is_team_defeated(battle->opponent_team))
     {
-        int next =
-            ai_choose_switch(&battle->opponent_team, player, (enum AiDifficulty)battle->difficulty);
+        int next = ai_choose_switch(&battle->opponent_team, player,
+                                    (enum AiDifficulty)battle->difficulty);
         if (next >= 0)
         {
             battle->opponent_active = next;
@@ -277,7 +297,7 @@ static void handle_fainted(Battle *battle)
     }
 }
 
-static void apply_end_turn_status(Pokemon *pokemon)
+static void apply_end_turn_status(Pokemon *pokemon, int *dmg_acc, int *ko_acc)
 {
     if (!is_pokemon_alive(*pokemon))
     {
@@ -298,15 +318,19 @@ static void apply_end_turn_status(Pokemon *pokemon)
     {
         pokemon->hp = 0;
     }
-    printf("%s is hurt by %s (-%d HP, %d/%d HP)!\n", pokemon->name,
-           pokemon->status == STATUS_POISON ? "poison" : "burn", dmg, pokemon->hp, pokemon->max_hp);
+    *dmg_acc += dmg;
+    printf("%s is hurt by %s (-%d HP, %d/%d HP)!\n",
+           pokemon->name,
+           pokemon->status == STATUS_POISON ? "poison" : "burn",
+           dmg, pokemon->hp, pokemon->max_hp);
     if (!is_pokemon_alive(*pokemon))
     {
+        (*ko_acc)++;
         printf("  %s%s fainted!%s\n", color_code(ANSI_RED), pokemon->name, color_code(ANSI_RESET));
     }
 }
 
-static void execute_turn(Battle *battle)
+void execute_turn(Battle *battle)
 {
     if (!battle)
     {
@@ -315,6 +339,7 @@ static void execute_turn(Battle *battle)
 
     Pokemon *player = &battle->player_team.pokemons[battle->player_active];
     Pokemon *opponent = &battle->opponent_team.pokemons[battle->opponent_active];
+    int ko = 0;
 
     int action = ui_prompt_battle_action(battle->turn, player, opponent);
     if (action < 0 || action == 3)
@@ -332,22 +357,23 @@ static void execute_turn(Battle *battle)
             return;
         }
         Move chosen = move_idx == -2
-                          ? (Move){"Struggle", 50, 100, TYPE_NORMAL, EFFECT_NONE, 0, 1, 1}
-                          : player->moves[move_idx];
-        int ai_sw = ai_should_switch(&battle->opponent_team, battle->opponent_active, player,
-                                     (enum AiDifficulty)battle->difficulty);
+            ? (Move){"Struggle", 50, 100, TYPE_NORMAL, EFFECT_NONE, 0, 1, 1}
+            : player->moves[move_idx];
+        int ai_sw = ai_should_switch(&battle->opponent_team, battle->opponent_active,
+                                     player, (enum AiDifficulty)battle->difficulty);
         if (ai_sw >= 0)
         {
             printf("Opponent withdrew %s!\n", opponent->name);
             battle->opponent_active = ai_sw;
             opponent = &battle->opponent_team.pokemons[ai_sw];
             printf("Opponent sends out %s!\n", opponent->name);
-            execute_attack(player, opponent, chosen);
+            battle->damage_dealt += execute_attack_tracked(player, opponent, chosen, &ko);
+            battle->kos_inflicted += ko;
         }
         else
         {
             Move ai_move = ai_choose_move(opponent, player, (enum AiDifficulty)battle->difficulty);
-            resolve_attacks(player, chosen, opponent, ai_move);
+            resolve_attacks(battle, player, chosen, opponent, ai_move);
         }
     }
     else if (action == 2)
@@ -355,13 +381,16 @@ static void execute_turn(Battle *battle)
         if (switch_player_pokemon(battle) == 0)
         {
             player = &battle->player_team.pokemons[battle->player_active];
-            execute_attack(opponent, player,
-                           ai_choose_move(opponent, player, (enum AiDifficulty)battle->difficulty));
+            Move ai_move = ai_choose_move(opponent, player, (enum AiDifficulty)battle->difficulty);
+            battle->damage_taken += execute_attack_tracked(opponent, player, ai_move, &ko);
+            battle->kos_suffered += ko;
         }
     }
 
-    apply_end_turn_status(&battle->player_team.pokemons[battle->player_active]);
-    apply_end_turn_status(&battle->opponent_team.pokemons[battle->opponent_active]);
+    apply_end_turn_status(&battle->player_team.pokemons[battle->player_active],
+                          &battle->damage_taken, &battle->kos_suffered);
+    apply_end_turn_status(&battle->opponent_team.pokemons[battle->opponent_active],
+                          &battle->damage_dealt, &battle->kos_inflicted);
     handle_fainted(battle);
 }
 
@@ -374,6 +403,10 @@ void start_battle(Battle *battle)
 
     battle->turn = 0;
     battle->forfeited = 0;
+    battle->damage_dealt = 0;
+    battle->damage_taken = 0;
+    battle->kos_inflicted = 0;
+    battle->kos_suffered = 0;
     battle->player_active = find_next_alive(&battle->player_team);
     battle->opponent_active = find_next_alive(&battle->opponent_team);
 
@@ -389,7 +422,8 @@ void start_battle(Battle *battle)
     printf("Opponent sends out %s!\n",
            battle->opponent_team.pokemons[battle->opponent_active].name);
 
-    while (!battle->forfeited && !is_team_defeated(battle->player_team) &&
+    while (!battle->forfeited &&
+           !is_team_defeated(battle->player_team) &&
            !is_team_defeated(battle->opponent_team))
     {
         battle->turn++;

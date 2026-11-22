@@ -29,6 +29,7 @@ SCF         = main.c          \
               gym.c           \
               moves.c         \
               pokemon.c       \
+              report.c        \
               save.c          \
               team.c          \
               tsv.c           \
