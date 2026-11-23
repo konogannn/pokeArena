@@ -23,14 +23,14 @@ static const char *status_color(enum Status status)
 {
     switch (status)
     {
-    case STATUS_POISON:
-        return ANSI_MAGENTA;
-    case STATUS_BURN:
-        return ANSI_RED;
-    case STATUS_PARALYSIS:
-        return ANSI_YELLOW;
-    default:
-        return ANSI_RESET;
+        case STATUS_POISON:
+            return ANSI_MAGENTA;
+        case STATUS_BURN:
+            return ANSI_RED;
+        case STATUS_PARALYSIS:
+            return ANSI_YELLOW;
+        default:
+            return ANSI_RESET;
     }
 }
 
@@ -177,7 +177,7 @@ void animate_hp_change(const Pokemon *pokemon, int old_hp, int new_hp)
     printf("\n");
 }
 
-static int ui_read_int_choice(const char *prompt, int min, int max)
+int ui_read_int_choice(const char *prompt, int min, int max)
 {
     char line[DISPLAY_INPUT_MAX];
 
@@ -197,18 +197,35 @@ static int ui_read_int_choice(const char *prompt, int min, int max)
     }
 }
 
-int ui_prompt_battle_action(int turn, const Pokemon *player, const Pokemon *opponent)
+int ui_prompt_battle_action_for(const char *label, int turn,
+                                const Pokemon *self, const Pokemon *foe)
 {
-    printf("\n%s--- Turn %d ---%s\n", color_code(ANSI_CYAN), turn, color_code(ANSI_RESET));
-    printf("You      : ");
-    display_pokemon(player);
-    printf("Opponent : ");
-    display_pokemon(opponent);
+    if (label)
+    {
+        printf("\n%s--- %s ---%s\n", color_code(ANSI_CYAN), label, color_code(ANSI_RESET));
+        printf("%s : ", label);
+        display_pokemon(self);
+        printf("Opponent : ");
+        display_pokemon(foe);
+    }
+    else
+    {
+        printf("\n%s--- Turn %d ---%s\n", color_code(ANSI_CYAN), turn, color_code(ANSI_RESET));
+        printf("You      : ");
+        display_pokemon(self);
+        printf("Opponent : ");
+        display_pokemon(foe);
+    }
 
     printf("Action: [%s1%s] Attack  [%s2%s] Switch  [%s3%s] Forfeit\n", color_code(ANSI_GREEN),
            color_code(ANSI_RESET), color_code(ANSI_CYAN), color_code(ANSI_RESET),
            color_code(ANSI_RED), color_code(ANSI_RESET));
     return ui_read_int_choice("Choice: ", 1, 3);
+}
+
+int ui_prompt_battle_action(int turn, const Pokemon *player, const Pokemon *opponent)
+{
+    return ui_prompt_battle_action_for(NULL, turn, player, opponent);
 }
 
 int ui_prompt_move(const Pokemon *pokemon)
@@ -242,7 +259,7 @@ int ui_prompt_move(const Pokemon *pokemon)
     while (1)
     {
         int choice = ui_read_int_choice("Move: ", 1, pokemon->move_count);
-        if (choice == -1)
+        if (choice < 0)
         {
             return -1;
         }
@@ -255,7 +272,7 @@ int ui_prompt_move(const Pokemon *pokemon)
     }
 }
 
-int ui_prompt_switch(const Team *team, int active_idx)
+int ui_prompt_switch_for(const char *label, const Team *team, int active_idx)
 {
     int alive_others = 0;
 
@@ -272,7 +289,14 @@ int ui_prompt_switch(const Team *team, int active_idx)
         return -1;
     }
 
-    printf("Choose a Pokemon to send out:\n");
+    if (label)
+    {
+        printf("%s - Choose a Pokemon to send out:\n", label);
+    }
+    else
+    {
+        printf("Choose a Pokemon to send out:\n");
+    }
     for (int i = 0; i < team->count; i++)
     {
         if (team->pokemons[i].hp > 0)
@@ -285,7 +309,7 @@ int ui_prompt_switch(const Team *team, int active_idx)
     while (1)
     {
         int slot = ui_read_int_choice("Switch to (1-6): ", 1, team->count);
-        if (slot == -1)
+        if (slot < 0)
         {
             return -1;
         }
@@ -303,4 +327,9 @@ int ui_prompt_switch(const Team *team, int active_idx)
         printf("Go, %s!\n", team->pokemons[idx].name);
         return idx;
     }
+}
+
+int ui_prompt_switch(const Team *team, int active_idx)
+{
+    return ui_prompt_switch_for(NULL, team, active_idx);
 }

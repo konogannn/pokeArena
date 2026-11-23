@@ -12,6 +12,8 @@ typedef struct
 
     int turn;
     int forfeited;
+    int forfeited_player;
+    int is_pvp;
     int difficulty;
 
     int damage_dealt;

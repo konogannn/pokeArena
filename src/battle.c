@@ -280,19 +280,43 @@ static void handle_fainted(Battle *battle)
 
     if (!is_pokemon_alive(*player) && !is_team_defeated(battle->player_team))
     {
-        if (switch_player_pokemon(battle) != 0)
+        int idx = ui_prompt_switch_for(battle->is_pvp ? "Player 1" : NULL,
+                                       &battle->player_team, battle->player_active);
+        if (idx < 0)
         {
             battle->forfeited = 1;
+            battle->forfeited_player = 1;
+        }
+        else
+        {
+            battle->player_active = idx;
         }
     }
     if (!is_pokemon_alive(*opponent) && !is_team_defeated(battle->opponent_team))
     {
-        int next = ai_choose_switch(&battle->opponent_team, player,
-                                    (enum AiDifficulty)battle->difficulty);
-        if (next >= 0)
+        if (battle->is_pvp)
         {
-            battle->opponent_active = next;
-            printf("Opponent sends out %s!\n", battle->opponent_team.pokemons[next].name);
+            int idx = ui_prompt_switch_for("Player 2",
+                                           &battle->opponent_team, battle->opponent_active);
+            if (idx < 0)
+            {
+                battle->forfeited = 1;
+                battle->forfeited_player = 2;
+            }
+            else
+            {
+                battle->opponent_active = idx;
+            }
+        }
+        else
+        {
+            int next = ai_choose_switch(&battle->opponent_team, player,
+                                        (enum AiDifficulty)battle->difficulty);
+            if (next >= 0)
+            {
+                battle->opponent_active = next;
+                printf("Opponent sends out %s!\n", battle->opponent_team.pokemons[next].name);
+            }
         }
     }
 }
@@ -330,10 +354,109 @@ static void apply_end_turn_status(Pokemon *pokemon, int *dmg_acc, int *ko_acc)
     }
 }
 
+static Move move_from_prompt(const Pokemon *pokemon, int move_idx)
+{
+    if (move_idx == -2)
+    {
+        Move struggle = {"Struggle", 50, 100, TYPE_NORMAL, EFFECT_NONE, 0, 1, 1};
+        return struggle;
+    }
+    return pokemon->moves[move_idx];
+}
+
+static int prompt_pvp_player(const char *label, Team *team, int *active_idx,
+                             const Pokemon *foe, Move *out_move)
+{
+    Pokemon *self = &team->pokemons[*active_idx];
+    int action = ui_prompt_battle_action_for(label, 0, self, foe);
+
+    if (action < 0 || action == 3)
+    {
+        return 3;
+    }
+    if (action == 2)
+    {
+        int sw = ui_prompt_switch_for(label, team, *active_idx);
+        if (sw < 0)
+        {
+            return 3;
+        }
+        *active_idx = sw;
+        return 2;
+    }
+
+    int move_idx = ui_prompt_move(self);
+    if (move_idx == -1)
+    {
+        return 3;
+    }
+    *out_move = move_from_prompt(self, move_idx);
+    return 1;
+}
+
+static void execute_pvp_turn(Battle *battle)
+{
+    Move p1_move;
+    Move p2_move;
+    memset(&p1_move, 0, sizeof(p1_move));
+    memset(&p2_move, 0, sizeof(p2_move));
+
+    printf("\n%s=== Turn %d ===%s\n", color_code(ANSI_CYAN), battle->turn, color_code(ANSI_RESET));
+    int act1 = prompt_pvp_player("Player 1", &battle->player_team, &battle->player_active,
+                                 &battle->opponent_team.pokemons[battle->opponent_active],
+                                 &p1_move);
+    if (act1 == 3)
+    {
+        battle->forfeited = 1;
+        battle->forfeited_player = 1;
+        return;
+    }
+
+    int act2 = prompt_pvp_player("Player 2", &battle->opponent_team, &battle->opponent_active,
+                                 &battle->player_team.pokemons[battle->player_active],
+                                 &p2_move);
+    if (act2 == 3)
+    {
+        battle->forfeited = 1;
+        battle->forfeited_player = 2;
+        return;
+    }
+
+    Pokemon *p1 = &battle->player_team.pokemons[battle->player_active];
+    Pokemon *p2 = &battle->opponent_team.pokemons[battle->opponent_active];
+    int ko = 0;
+
+    if (act1 == 1 && act2 == 1)
+    {
+        resolve_attacks(battle, p1, p1_move, p2, p2_move);
+    }
+    else if (act1 == 1)
+    {
+        battle->damage_dealt += execute_attack_tracked(p1, p2, p1_move, &ko);
+        battle->kos_inflicted += ko;
+    }
+    else if (act2 == 1)
+    {
+        battle->damage_taken += execute_attack_tracked(p2, p1, p2_move, &ko);
+        battle->kos_suffered += ko;
+    }
+
+    apply_end_turn_status(&battle->player_team.pokemons[battle->player_active],
+                          &battle->damage_taken, &battle->kos_suffered);
+    apply_end_turn_status(&battle->opponent_team.pokemons[battle->opponent_active],
+                          &battle->damage_dealt, &battle->kos_inflicted);
+    handle_fainted(battle);
+}
+
 void execute_turn(Battle *battle)
 {
     if (!battle)
     {
+        return;
+    }
+    if (battle->is_pvp)
+    {
+        execute_pvp_turn(battle);
         return;
     }
 
@@ -345,6 +468,7 @@ void execute_turn(Battle *battle)
     if (action < 0 || action == 3)
     {
         battle->forfeited = 1;
+        battle->forfeited_player = 1;
         return;
     }
 
@@ -354,11 +478,10 @@ void execute_turn(Battle *battle)
         if (move_idx == -1)
         {
             battle->forfeited = 1;
+            battle->forfeited_player = 1;
             return;
         }
-        Move chosen = move_idx == -2
-            ? (Move){"Struggle", 50, 100, TYPE_NORMAL, EFFECT_NONE, 0, 1, 1}
-            : player->moves[move_idx];
+        Move chosen = move_from_prompt(player, move_idx);
         int ai_sw = ai_should_switch(&battle->opponent_team, battle->opponent_active,
                                      player, (enum AiDifficulty)battle->difficulty);
         if (ai_sw >= 0)
@@ -403,6 +526,7 @@ void start_battle(Battle *battle)
 
     battle->turn = 0;
     battle->forfeited = 0;
+    battle->forfeited_player = 0;
     battle->damage_dealt = 0;
     battle->damage_taken = 0;
     battle->kos_inflicted = 0;
@@ -416,11 +540,21 @@ void start_battle(Battle *battle)
         return;
     }
 
-    printf("\n=== Battle Start! (AI: %s) ===\n",
-           ai_difficulty_to_string((enum AiDifficulty)battle->difficulty));
-    printf("You send out %s!\n", battle->player_team.pokemons[battle->player_active].name);
-    printf("Opponent sends out %s!\n",
-           battle->opponent_team.pokemons[battle->opponent_active].name);
+    if (battle->is_pvp)
+    {
+        printf("\n=== Local PvP Battle Start! ===\n");
+        printf("Player 1 sends out %s!\n", battle->player_team.pokemons[battle->player_active].name);
+        printf("Player 2 sends out %s!\n",
+               battle->opponent_team.pokemons[battle->opponent_active].name);
+    }
+    else
+    {
+        printf("\n=== Battle Start! (AI: %s) ===\n",
+               ai_difficulty_to_string((enum AiDifficulty)battle->difficulty));
+        printf("You send out %s!\n", battle->player_team.pokemons[battle->player_active].name);
+        printf("Opponent sends out %s!\n",
+               battle->opponent_team.pokemons[battle->opponent_active].name);
+    }
 
     while (!battle->forfeited &&
            !is_team_defeated(battle->player_team) &&
@@ -431,6 +565,23 @@ void start_battle(Battle *battle)
     }
 
     printf("\n=== Battle Over ===\n");
+    if (battle->is_pvp)
+    {
+        if (battle->forfeited)
+        {
+            printf("Player %d forfeited! Player %d wins!\n",
+                   battle->forfeited_player, battle->forfeited_player == 1 ? 2 : 1);
+        }
+        else if (is_team_defeated(battle->player_team))
+        {
+            printf("All Player 1 Pokemon fainted! Player 2 wins!\n");
+        }
+        else
+        {
+            printf("All Player 2 Pokemon fainted! Player 1 wins!\n");
+        }
+        return;
+    }
     if (battle->forfeited)
     {
         printf("You forfeited the battle!\n");

@@ -81,6 +81,10 @@ static void cmd_help(void)
            color_code(ANSI_CYAN), color_code(ANSI_RESET));
     printf("  %sbattle%s (b)           - Start a battle with your current team\n",
            color_code(ANSI_GREEN), color_code(ANSI_RESET));
+    printf("  %splayer%s <1|2>         - Switch active player for 2-player mode\n",
+           color_code(ANSI_CYAN), color_code(ANSI_RESET));
+    printf("  %spvp%s                  - Start a local 2-player turn-by-turn battle\n",
+           color_code(ANSI_GREEN), color_code(ANSI_RESET));
     printf("  %sgyms%s                 - List all 8 Kanto Gym Leaders & badges\n",
            color_code(ANSI_CYAN), color_code(ANSI_RESET));
     printf("  %sgym%s <1-8|name>       - Challenge a Kanto Gym Leader\n", color_code(ANSI_YELLOW),
@@ -251,6 +255,48 @@ static void cmd_battle(const Pokemon *pokedex, int pokedex_count, Team *team,
     report_record_battle(report, label, &battle);
 }
 
+static void cmd_player(int *active_player, int *p2_enabled, const char *arg)
+{
+    int p = 0;
+
+    if (!arg || str_parse_int(arg, &p) != 0 || (p != 1 && p != 2))
+    {
+        fprintf(stderr, "ui: usage: player <1|2>\n");
+        return;
+    }
+    if (p == 2)
+    {
+        *p2_enabled = 1;
+    }
+    *active_player = p - 1;
+    printf("%sSwitched to Player %d.%s\n", color_code(ANSI_CYAN), p, color_code(ANSI_RESET));
+}
+
+static void cmd_pvp(Team teams[2], BattleReport *report)
+{
+    if (!is_team_valid(teams[0]) || is_team_defeated(teams[0]))
+    {
+        fprintf(stderr, "ui: Player 1 must have 1-6 healthy Pokemon\n");
+        return;
+    }
+    if (!is_team_valid(teams[1]) || is_team_defeated(teams[1]))
+    {
+        fprintf(stderr, "ui: Player 2 needs 1-6 healthy Pokemon (use 'player 2' then 'add'/'autofill')\n");
+        return;
+    }
+
+    Battle battle;
+    memset(&battle, 0, sizeof(battle));
+    battle.is_pvp = 1;
+    battle.player_team = teams[0];
+    battle.opponent_team = teams[1];
+
+    start_battle(&battle);
+    teams[0] = battle.player_team;
+    teams[1] = battle.opponent_team;
+    report_record_battle(report, "Local PvP (P1 vs P2)", &battle);
+}
+
 static void cmd_gym(const Pokemon *pokedex, int pokedex_count, Team *team, int *badges_mask,
                     const char *arg, BattleReport *report)
 {
@@ -332,7 +378,8 @@ static void cmd_load_pokemon(Pokemon **pokedex, int *pokedex_count,
 }
 
 static int handle_command(const char *cmd, char *arg, Pokemon **pokedex, int *pokedex_count,
-                          Move **moves, int *move_count, Team *team,
+                          Move **moves, int *move_count, Team teams[2],
+                          int *active_player, int *p2_enabled,
                           int *badges_mask, BattleReport *report)
 {
     if (strcmp(cmd, "quit") == 0 || strcmp(cmd, "exit") == 0 || strcmp(cmd, "q") == 0)
@@ -355,29 +402,41 @@ static int handle_command(const char *cmd, char *arg, Pokemon **pokedex, int *po
     {
         cmd_info(*pokedex, *pokedex_count, arg);
     }
+    else if (strcmp(cmd, "player") == 0)
+    {
+        cmd_player(active_player, p2_enabled, arg);
+    }
+    else if (strcmp(cmd, "p2") == 0)
+    {
+        cmd_player(active_player, p2_enabled, *active_player == 0 ? "2" : "1");
+    }
+    else if (strcmp(cmd, "pvp") == 0)
+    {
+        cmd_pvp(teams, report);
+    }
     else if (strcmp(cmd, "team") == 0 || strcmp(cmd, "t") == 0)
     {
-        display_team(*team);
+        display_team(teams[*active_player]);
     }
     else if (strcmp(cmd, "add") == 0)
     {
-        cmd_add(*pokedex, *pokedex_count, team, arg);
+        cmd_add(*pokedex, *pokedex_count, &teams[*active_player], arg);
     }
     else if (strcmp(cmd, "remove") == 0)
     {
-        cmd_remove(team, arg);
+        cmd_remove(&teams[*active_player], arg);
     }
     else if (strcmp(cmd, "swap") == 0)
     {
-        cmd_swap(team, arg);
+        cmd_swap(&teams[*active_player], arg);
     }
     else if (strcmp(cmd, "autofill") == 0)
     {
-        cmd_autofill(*pokedex, *pokedex_count, team);
+        cmd_autofill(*pokedex, *pokedex_count, &teams[*active_player]);
     }
     else if (strcmp(cmd, "battle") == 0 || strcmp(cmd, "b") == 0)
     {
-        cmd_battle(*pokedex, *pokedex_count, team, arg, report);
+        cmd_battle(*pokedex, *pokedex_count, &teams[*active_player], arg, report);
     }
     else if (strcmp(cmd, "gyms") == 0)
     {
@@ -385,24 +444,24 @@ static int handle_command(const char *cmd, char *arg, Pokemon **pokedex, int *po
     }
     else if (strcmp(cmd, "gym") == 0)
     {
-        cmd_gym(*pokedex, *pokedex_count, team, badges_mask, arg, report);
+        cmd_gym(*pokedex, *pokedex_count, &teams[*active_player], badges_mask, arg, report);
     }
     else if (strcmp(cmd, "league") == 0)
     {
-        challenge_league(*pokedex, *pokedex_count, team, *badges_mask, report);
+        challenge_league(*pokedex, *pokedex_count, &teams[*active_player], *badges_mask, report);
     }
     else if (strcmp(cmd, "heal") == 0)
     {
-        heal_team(team);
+        heal_team(&teams[*active_player]);
         printf("%sTeam healed to full HP.%s\n", color_code(ANSI_GREEN), color_code(ANSI_RESET));
     }
     else if (strcmp(cmd, "save") == 0)
     {
-        cmd_save(team, *badges_mask, arg);
+        cmd_save(&teams[*active_player], *badges_mask, arg);
     }
     else if (strcmp(cmd, "load") == 0)
     {
-        cmd_load(*pokedex, *pokedex_count, team, badges_mask, arg);
+        cmd_load(*pokedex, *pokedex_count, &teams[*active_player], badges_mask, arg);
     }
     else if (strcmp(cmd, "loadmoves") == 0)
     {
@@ -414,7 +473,7 @@ static int handle_command(const char *cmd, char *arg, Pokemon **pokedex, int *po
     }
     else if (strcmp(cmd, "clear") == 0)
     {
-        team->count = 0;
+        teams[*active_player].count = 0;
         printf("Team cleared.\n");
     }
     else
@@ -429,11 +488,16 @@ void run_game_loop(Pokemon **pokedex, int *pokedex_count, Move **moves, int *mov
 {
     char line[UI_INPUT_MAX];
     int badges_mask = 0;
+    Team teams[2];
+    int active_player = 0;
+    int p2_enabled = 0;
 
     if (!pokedex || !*pokedex || !pokedex_count || !moves || !*moves || !move_count || !team)
     {
         return;
     }
+    memset(teams, 0, sizeof(teams));
+    teams[0] = *team;
 
     printf("%s+--------------------------------------+%s\n", color_code(ANSI_CYAN),
            color_code(ANSI_RESET));
@@ -446,8 +510,16 @@ void run_game_loop(Pokemon **pokedex, int *pokedex_count, Move **moves, int *mov
 
     while (1)
     {
-        printf("%sPokeArena [%d/6]> %s", color_code(ANSI_BOLD), team->count,
-               color_code(ANSI_RESET));
+        if (p2_enabled)
+        {
+            printf("%sPokeArena [P%d %d/6]> %s", color_code(ANSI_BOLD),
+                   active_player + 1, teams[active_player].count, color_code(ANSI_RESET));
+        }
+        else
+        {
+            printf("%sPokeArena [%d/6]> %s", color_code(ANSI_BOLD), teams[0].count,
+                   color_code(ANSI_RESET));
+        }
         if (!fgets(line, sizeof(line), stdin))
         {
             printf("\n");
@@ -460,10 +532,11 @@ void run_game_loop(Pokemon **pokedex, int *pokedex_count, Move **moves, int *mov
         {
             continue;
         }
-        if (handle_command(cmd, arg, pokedex, pokedex_count, moves, move_count, team,
-                           &badges_mask, report) != 0)
+        if (handle_command(cmd, arg, pokedex, pokedex_count, moves, move_count, teams,
+                           &active_player, &p2_enabled, &badges_mask, report) != 0)
         {
             break;
         }
     }
+    *team = teams[0];
 }
