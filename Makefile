@@ -99,4 +99,4 @@ re: fclean all
 
 -include $(DEP)
 
-.PHONY: all clean fclean re format format-check cppcheck sanitize lint test
+.PHONY: all clean fclean re format format-check cppcheck sanitize lint tests_run

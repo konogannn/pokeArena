@@ -2,3 +2,4 @@
 *.d
 pokeArena*
 *.txt
+.DS_Store
